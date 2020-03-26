@@ -15,7 +15,11 @@ def pytest_addoption(parser):
     parser.addoption("--config_file",
                      action="store",
                      default=None,
-                     help="JSON config file for boardfarm")
+                     help="JSON config file for boardfarm devices")
+    parser.addoption("--env_file",
+                     action="store",
+                     default=None,
+                     help="JSON config file for boardfarm environment")
     parser.addoption("--testsuite",
                      action="store",
                      default="connect",
@@ -32,6 +36,7 @@ def standard(request):
         board_type,
     ]  # convert to list
     station_config_loc = request.config.getoption('--config_file')
+    env_config_loc = request.config.getoption('--env_file')
     testsuite = request.config.getoption('--testsuite')
 
     # Get details about available stations (it returns a location
@@ -47,6 +52,7 @@ def standard(request):
     test_config.BOARD_NAMES = names
     test_config.boardfarm_config_location = loc
     test_config.boardfarm_config = conf
+    test_config.test_args_location = env_config_loc
 
     # Connect to a station (board and devices)
     config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
