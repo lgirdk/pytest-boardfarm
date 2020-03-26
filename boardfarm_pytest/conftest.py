@@ -1,7 +1,8 @@
 import os
+
+import boardfarm_docsis.lib.booting
 import pexpect
 import pytest
-
 from boardfarm.bft import connect_to_devices
 from boardfarm.lib import test_configurator
 
@@ -27,7 +28,9 @@ def standard(request):
     Create needed fixtures for boardfarm tests.
     '''
     board_type = request.config.getoption('--board')
-    board_type = [board_type,]  # convert to list
+    board_type = [
+        board_type,
+    ]  # convert to list
     station_config_loc = request.config.getoption('--config_file')
     testsuite = request.config.getoption('--testsuite')
 
@@ -45,14 +48,19 @@ def standard(request):
     test_config.boardfarm_config_location = loc
     test_config.boardfarm_config = conf
 
-    ## Connect to a station (board and devices)
-    #config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
+    # Connect to a station (board and devices)
+    config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
 
-    #request.cls.config = config
-    #request.cls.dev = device_mgr
-    #request.cls.env_helper = env_helper
-    #request.cls.reset_after_fail = True
-    #request.cls.dont_retry = False
-    #request.cls.logged = dict()
-    #request.cls.subtests = []
-    #request.cls.attempts = 0
+    request.cls.config = config
+    request.cls.dev = device_mgr
+    request.cls.env_helper = env_helper
+    request.cls.reset_after_fail = True
+    request.cls.dont_retry = False
+    request.cls.logged = dict()
+    request.cls.subtests = []
+    request.cls.attempts = 0
+
+    boardfarm_docsis.lib.booting.boot(config=request.cls.config,
+                                      env_helper=request.cls.env_helper,
+                                      devices=request.cls.dev,
+                                      logged=request.cls.logged)

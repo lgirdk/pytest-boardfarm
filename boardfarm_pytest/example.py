@@ -12,4 +12,14 @@ class MyBaseTestClass(unittest.TestCase):
 class RouterPingWanDev(MyBaseTestClass):
     '''Router can ping device through WAN interface.'''
     def runTest(self):
-        pass
+        board = self.dev.board
+        wan = self.dev.wan
+        if not wan:
+            msg = 'No WAN Device defined, skipping ping WAN test.'
+            self.skipTest(msg)
+        board.sendline('\nping -c5 %s' % wan.gw)
+        board.expect('5 (packets )?received', timeout=15)
+        board.expect(board.prompt)
+
+    def recover(self):
+        self.dev.board.sendcontrol('c')
