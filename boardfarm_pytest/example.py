@@ -1,5 +1,6 @@
-import pytest
 import unittest
+
+import pytest
 
 
 # Add decorators to just the base class
