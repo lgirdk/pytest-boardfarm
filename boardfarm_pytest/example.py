@@ -11,7 +11,7 @@ class MyBaseTestClass(unittest.TestCase):
 
 class RouterPingWanDev(MyBaseTestClass):
     '''Router can ping device through WAN interface.'''
-    def runTest(self):
+    def test_main(self):
         board = self.dev.board
         wan = self.dev.wan
         if not wan:
