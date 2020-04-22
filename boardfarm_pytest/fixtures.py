@@ -8,22 +8,23 @@ from boardfarm.lib import test_configurator
 
 
 def pytest_addoption(parser):
-    parser.addoption("--board",
-                     action="store",
-                     default="type1",
-                     help="board type")
-    parser.addoption("--config_file",
-                     action="store",
-                     default=None,
-                     help="JSON config file for boardfarm devices")
-    parser.addoption("--env_file",
-                     action="store",
-                     default=None,
-                     help="JSON config file for boardfarm environment")
-    parser.addoption("--testsuite",
-                     action="store",
-                     default="connect",
-                     help="suite of tests to run")
+    group = parser.getgroup('boardfarm')
+    group.addoption("--board",
+                    action="store",
+                    default="type1",
+                    help="board type")
+    group.addoption("--config_file",
+                    action="store",
+                    default=None,
+                    help="JSON config file for boardfarm devices")
+    group.addoption("--env_file",
+                    action="store",
+                    default=None,
+                    help="JSON config file for boardfarm environment")
+    group.addoption("--testsuite",
+                    action="store",
+                    default="connect",
+                    help="suite of tests to run")
 
 
 def save_console_logs(config, device_mgr):
@@ -43,9 +44,10 @@ def save_console_logs(config, device_mgr):
 
 
 @pytest.fixture(scope="class")
-def standard(request):
+def boardfarm_test_fixtures(request):
     '''
     Create needed fixtures for boardfarm tests.
+    Lab configuration, Device Manager, Environment Config helper
     '''
     board_type = request.config.getoption('--board')
     board_type = [
