@@ -9,22 +9,18 @@ from boardfarm.lib import test_configurator
 
 def pytest_addoption(parser):
     group = parser.getgroup('boardfarm')
-    group.addoption("--board",
+    group.addoption("--bfboard",
                     action="store",
                     default="type1",
                     help="board type")
-    group.addoption("--config_file",
+    group.addoption("--bfconfig_file",
                     action="store",
                     default=None,
                     help="JSON config file for boardfarm devices")
-    group.addoption("--env_file",
+    group.addoption("--bfenv_file",
                     action="store",
                     default=None,
                     help="JSON config file for boardfarm environment")
-    group.addoption("--testsuite",
-                    action="store",
-                    default="connect",
-                    help="suite of tests to run")
 
 
 def save_console_logs(config, device_mgr):
@@ -44,18 +40,17 @@ def save_console_logs(config, device_mgr):
 
 
 @pytest.fixture(scope="class")
-def boardfarm_test_fixtures(request):
+def boardfarm_fixtures(request):
     '''
     Create needed fixtures for boardfarm tests.
     Lab configuration, Device Manager, Environment Config helper
     '''
-    board_type = request.config.getoption('--board')
+    board_type = request.config.getoption('--bfboard')
     board_type = [
         board_type,
     ]  # convert to list
-    station_config_loc = request.config.getoption('--config_file')
-    env_config_loc = request.config.getoption('--env_file')
-    testsuite = request.config.getoption('--testsuite')
+    station_config_loc = request.config.getoption('--bfconfig_file')
+    env_config_loc = request.config.getoption('--bfenv_file')
 
     # Get details about available stations (it returns a location
     # in case of redirects)

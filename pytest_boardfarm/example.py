@@ -4,7 +4,7 @@ import pytest
 
 
 # Add decorators to just the base class
-@pytest.mark.usefixtures("standard")
+@pytest.mark.usefixtures("boardfarm_fixtures")
 class MyBaseTestClass(unittest.TestCase):
     pass
 
