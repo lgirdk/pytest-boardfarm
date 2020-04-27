@@ -12,6 +12,10 @@ def pytest_addoption(parser):
                     action="store",
                     default="type1",
                     help="board type")
+    group.addoption("--bfname",
+                    action="store",
+                    default=[],
+                    help="one or more board names (comma separated)")
     group.addoption("--bfconfig_file",
                     action="store",
                     default=None,
@@ -20,6 +24,10 @@ def pytest_addoption(parser):
                     action="store",
                     default=None,
                     help="JSON config file for boardfarm environment")
+    group.addoption("--bfskip_boot",
+                    action="store_true",
+                    default=False,
+                    help="do not initialise the board (i.e. use it as is)")
 
 
 def save_console_logs(config, device_mgr):
@@ -44,12 +52,17 @@ def boardfarm_fixtures(request):
     Create needed fixtures for boardfarm tests.
     Lab configuration, Device Manager, Environment Config helper
     '''
+
     board_type = request.config.getoption('--bfboard')
     board_type = [
         board_type,
     ]  # convert to list
+    board_names = request.config.getoption('--bfname')
+    if isinstance(board_names, str):
+        board_names = board_names.split(',', -1)
     station_config_loc = request.config.getoption('--bfconfig_file')
     env_config_loc = request.config.getoption('--bfenv_file')
+    skip_boot = request.config.getoption('--bfskip_boot')
 
     # Get details about available stations (it returns a location
     # in case of redirects)
@@ -57,8 +70,8 @@ def boardfarm_fixtures(request):
 
     # Find available stations with compatible boards (DUTs)
     names = test_configurator.filter_station_config(conf,
-                                                    board_type=board_type)
-
+                                                    board_type=board_type,
+                                                    board_names=board_names)
     # Setup test configuration
     test_config = test_configurator.BoardfarmTestConfig()
     test_config.BOARD_NAMES = names
@@ -78,14 +91,16 @@ def boardfarm_fixtures(request):
     request.cls.subtests = []
     request.cls.attempts = 0
 
-    try:
-        boardfarm_docsis.lib.booting.boot(config=request.cls.config,
-                                          env_helper=request.cls.env_helper,
-                                          devices=request.cls.dev,
-                                          logged=request.cls.logged)
-    except Exception:
-        save_console_logs(config, device_mgr)
-        return
+    if not skip_boot:
+        try:
+            boardfarm_docsis.lib.booting.boot(
+                config=request.cls.config,
+                env_helper=request.cls.env_helper,
+                devices=request.cls.dev,
+                logged=request.cls.logged)
+        except Exception:
+            save_console_logs(config, device_mgr)
+            return
 
     # End of setup
     yield
