@@ -1,7 +1,6 @@
 import os
 
 import boardfarm_docsis.lib.booting
-import pexpect
 import pytest
 from boardfarm.bft import connect_to_devices
 from boardfarm.lib import test_configurator
