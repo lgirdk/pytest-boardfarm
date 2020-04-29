@@ -1,5 +1,6 @@
 import os
 
+import boardfarm
 import boardfarm_docsis.lib.booting
 import pytest
 from boardfarm.bft import connect_to_devices
@@ -46,13 +47,11 @@ def save_console_logs(config, device_mgr):
                 clog.write(d.log)
 
 
-@pytest.fixture(scope="class")
-def boardfarm_fixtures(request):
-    '''
-    Create needed fixtures for boardfarm tests.
-    Lab configuration, Device Manager, Environment Config helper
-    '''
-
+@pytest.yield_fixture(scope="session")
+def boardfarm_fixtures_init(request):
+    """Initialisation fixture. Gets the comd line values, returns the
+    Returns the Device Manager, Environment Config helper
+    """
     board_type = request.config.getoption('--bfboard')
     board_type = [
         board_type,
@@ -81,6 +80,20 @@ def boardfarm_fixtures(request):
 
     # Connect to a station (board and devices)
     config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
+    boardfarm.config.pytestdev = device_mgr
+    boardfarm.config.pytestenv = env_helper
+    boardfarm.config.pytestbfweb = bfweb
+    boardfarm.config.pytestconfig = config
+    yield config, device_mgr, env_helper, bfweb, skip_boot
+
+
+@pytest.fixture(scope="class", autouse=True)
+def boardfarm_fixtures(boardfarm_fixtures_init, request):
+    '''
+    Create needed fixtures for boardfarm tests classes.
+    '''
+    # Connect to a station (board and devices)
+    config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
 
     request.cls.config = config
     request.cls.dev = device_mgr
