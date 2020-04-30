@@ -1,5 +1,6 @@
 pre-commit
 pytest==5.3.5
 pytest-html
+pytest-json
 pytest-mock
 pytest-randomly
