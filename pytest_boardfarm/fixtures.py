@@ -5,6 +5,7 @@ import boardfarm_docsis.lib.booting
 import pytest
 from boardfarm.bft import connect_to_devices
 from boardfarm.lib import test_configurator
+from boardfarm.tests import bft_base_test
 
 
 def pytest_addoption(parser):
@@ -80,11 +81,20 @@ def boardfarm_fixtures_init(request):
 
     # Connect to a station (board and devices)
     config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
-    boardfarm.config.pytestdev = device_mgr
-    boardfarm.config.pytestenv = env_helper
-    boardfarm.config.pytestbfweb = bfweb
-    boardfarm.config.pytestconfig = config
+    if not skip_boot:
+        try:
+            boardfarm_docsis.lib.booting.boot(config=config,
+                                              env_helper=env_helper,
+                                              devices=device_mgr,
+                                              logged=dict())
+        except Exception as e:
+            print(e)
+            save_console_logs(config, device_mgr)
+            raise
+
     yield config, device_mgr, env_helper, bfweb, skip_boot
+
+    print('Test session completed')
 
 
 @pytest.fixture(scope="class", autouse=True)
@@ -94,7 +104,6 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
     '''
     # Connect to a station (board and devices)
     config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
-
     request.cls.config = config
     request.cls.dev = device_mgr
     request.cls.env_helper = env_helper
@@ -103,17 +112,9 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
     request.cls.logged = dict()
     request.cls.subtests = []
     request.cls.attempts = 0
-
-    if not skip_boot:
-        try:
-            boardfarm_docsis.lib.booting.boot(
-                config=request.cls.config,
-                env_helper=request.cls.env_helper,
-                devices=request.cls.dev,
-                logged=request.cls.logged)
-        except Exception:
-            save_console_logs(config, device_mgr)
-            return
+    # the mother of all hacks
+    bft_base_test.BftBaseTest.__init__(request.instance, config, device_mgr,
+                                       env_helper)
 
     # End of setup
     yield
