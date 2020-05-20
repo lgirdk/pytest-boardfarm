@@ -1,6 +1,5 @@
 import os
 
-import boardfarm
 import boardfarm_docsis.lib.booting
 import pytest
 from boardfarm.bft import connect_to_devices
@@ -97,7 +96,7 @@ def boardfarm_fixtures_init(request):
     print('Test session completed')
 
 
-@pytest.fixture(scope="class", autouse=True)
+@pytest.fixture(scope="class")
 def boardfarm_fixtures(boardfarm_fixtures_init, request):
     '''
     Create needed fixtures for boardfarm tests classes.
@@ -120,3 +119,18 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
     yield
 
     save_console_logs(config, device_mgr)
+
+
+@pytest.fixture
+def devices(boardfarm_fixtures_init):
+    yield boardfarm_fixtures_init[1]
+
+
+@pytest.fixture
+def env_helper(boardfarm_fixtures_init):
+    yield boardfarm_fixtures_init[2]
+
+
+@pytest.fixture
+def config(boardfarm_fixtures_init):
+    yield boardfarm_fixtures_init[0]

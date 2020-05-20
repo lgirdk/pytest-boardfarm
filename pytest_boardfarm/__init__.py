@@ -5,5 +5,5 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from .fixtures import (boardfarm_fixtures, boardfarm_fixtures_init,
-                       pytest_addoption)
+from .fixtures import (boardfarm_fixtures, boardfarm_fixtures_init, config,
+                       devices, env_helper, pytest_addoption)
