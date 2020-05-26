@@ -96,29 +96,32 @@ def boardfarm_fixtures_init(request):
     print('Test session completed')
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="class", autouse=True)
 def boardfarm_fixtures(boardfarm_fixtures_init, request):
     '''
     Create needed fixtures for boardfarm tests classes.
     '''
-    # Connect to a station (board and devices)
-    config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
-    request.cls.config = config
-    request.cls.dev = device_mgr
-    request.cls.env_helper = env_helper
-    request.cls.reset_after_fail = True
-    request.cls.dont_retry = False
-    request.cls.logged = dict()
-    request.cls.subtests = []
-    request.cls.attempts = 0
-    # the mother of all hacks
-    bft_base_test.BftBaseTest.__init__(request.instance, config, device_mgr,
-                                       env_helper)
+    if request.cls:
+        # Connect to a station (board and devices)
+        config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
+        request.cls.config = config
+        request.cls.dev = device_mgr
+        request.cls.env_helper = env_helper
+        request.cls.reset_after_fail = True
+        request.cls.dont_retry = False
+        request.cls.logged = dict()
+        request.cls.subtests = []
+        request.cls.attempts = 0
+        # the mother of all hacks
+        bft_base_test.BftBaseTest.__init__(request.instance, config,
+                                           device_mgr, env_helper)
 
-    # End of setup
-    yield
+        # End of setup
+        yield
 
-    save_console_logs(config, device_mgr)
+        save_console_logs(config, device_mgr)
+    else:
+        yield
 
 
 @pytest.fixture
