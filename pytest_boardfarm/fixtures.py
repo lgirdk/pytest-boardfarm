@@ -78,6 +78,9 @@ def boardfarm_fixtures_init(request):
     test_config.boardfarm_config = conf
     test_config.test_args_location = env_config_loc
 
+    test_config.ARM = None
+    test_config.ATOM = None
+    test_config.COMBINED = None
     # Connect to a station (board and devices)
     config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
     if not skip_boot:
