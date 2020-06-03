@@ -19,11 +19,12 @@ def pytest_addoption(parser):
                     help="one or more board names (comma separated)")
     group.addoption("--bfconfig_file",
                     action="store",
-                    default=None,
+                    default=os.getenv('BFT_CONFIG', None),
                     help="JSON config file for boardfarm devices")
     group.addoption("--bfenv_file",
                     action="store",
-                    default=None,
+                    default=os.getenv('BFT_ARGS', None),
+                    required=False,
                     help="JSON config file for boardfarm environment")
     group.addoption("--bfskip_boot",
                     action="store_true",
