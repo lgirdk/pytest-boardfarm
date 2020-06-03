@@ -66,7 +66,10 @@ def boardfarm_fixtures_init(request):
 
     # Get details about available stations (it returns a location
     # in case of redirects)
-    loc, conf = test_configurator.get_station_config(station_config_loc)
+    # Note: if a file is given the _ridirect will be ingnored
+    from_file = not station_config_loc.startswith('http')
+    loc, conf = test_configurator.get_station_config(station_config_loc,
+                                                     from_file)
 
     # Find available stations with compatible boards (DUTs)
     names = test_configurator.filter_station_config(conf,
