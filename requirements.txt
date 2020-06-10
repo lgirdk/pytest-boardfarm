@@ -1,6 +1,9 @@
 pre-commit
 pytest==5.3.5
+pytest-cov
 pytest-html
+pytest-instafail
 pytest-json
 pytest-mock
 pytest-randomly
+pytest-xdist
