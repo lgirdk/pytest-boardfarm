@@ -30,6 +30,14 @@ def pytest_addoption(parser):
                     action="store_true",
                     default=False,
                     help="do not initialise the board (i.e. use it as is)")
+    group.addoption("--bffeature",
+                    action="append",
+                    default=[],
+                    help="Features required for this test run")
+    group.addoption("--bffilter",
+                    action="append",
+                    default=None,
+                    help="Regex filter off arbitrary board parameters")
 
 
 def save_console_logs(config, device_mgr):
@@ -63,6 +71,8 @@ def boardfarm_fixtures_init(request):
     station_config_loc = request.config.getoption('--bfconfig_file')
     env_config_loc = request.config.getoption('--bfenv_file')
     skip_boot = request.config.getoption('--bfskip_boot')
+    features = request.config.getoption('--bffeature')
+    board_filter = request.config.getoption('--bffilter')
 
     # Get details about available stations (it returns a location
     # in case of redirects)
@@ -74,7 +84,13 @@ def boardfarm_fixtures_init(request):
     # Find available stations with compatible boards (DUTs)
     names = test_configurator.filter_station_config(conf,
                                                     board_type=board_type,
-                                                    board_names=board_names)
+                                                    board_names=board_names,
+                                                    board_features=features,
+                                                    board_filter=board_filter)
+
+    if features or board_filter:
+        print("Boards available are: {}".format(names))
+
     # Setup test configuration
     test_config = test_configurator.BoardfarmTestConfig()
     test_config.BOARD_NAMES = names
