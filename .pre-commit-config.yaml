@@ -47,3 +47,13 @@ repos:
       rev: v0.29.0
       hooks:
           - id: yapf
+    - repo: https://github.com/myint/eradicate
+      rev: master
+      hooks:
+          - id: eradicate
+            name: eradicate
+            description: Apply eradicate
+            entry: eradicate
+            language: python
+            files: \.py$
+            args: [--in-place]
