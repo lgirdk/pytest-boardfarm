@@ -14,7 +14,7 @@ def read(fname):
 
 setup(
     name='pytest-boardfarm',
-    version='1.0.0',
+    version='0.2.0',
     author='Various',
     maintainer='Various',
     license='MIT',
