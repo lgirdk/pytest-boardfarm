@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import time
 
 import pytest
 from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
@@ -44,6 +45,7 @@ def pytest_addoption(parser):
                     help="Regex filter off arbitrary board parameters")
 
 
+@pytest.hookimpl
 def pytest_configure(config):
     config.addinivalue_line("markers", "ams_automated_stable_tcs")
     config.addinivalue_line("markers", "bf_lgi_selftest")
@@ -64,6 +66,14 @@ def pytest_configure(config):
     config.addinivalue_line("markers",
                             "telemetry_TR069_gpv_datatype_validation")
     config.addinivalue_line("markers", "telemetry_TR069_simple_gpv")
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    if call.when == 'setup' and hasattr(item.session, "time_to_boot"):
+        call.start -= item.session.time_to_boot
+        item.session.time_to_boot = 0
+    yield
 
 
 @pytest.mark.tryfirst
@@ -149,17 +159,19 @@ def boardfarm_fixtures_init(request):
         test_config.COMBINED = None
         # Connect to a station (board and devices)
         config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
+        request.session.time_to_boot = 0
         if not skip_boot:
             try:
+                t = time.time()
                 boardfarm_docsis.lib.booting.boot(config=config,
                                                   env_helper=env_helper,
                                                   devices=device_mgr,
                                                   logged=dict())
+                request.session.time_to_boot = time.time() - t
             except Exception as e:
                 print(e)
                 save_console_logs(config, device_mgr)
                 raise
-
         yield config, device_mgr, env_helper, bfweb, skip_boot
     else:
         yield
