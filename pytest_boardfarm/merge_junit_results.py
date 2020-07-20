@@ -40,7 +40,7 @@ def main():
     if not args:
         usage()
         sys.exit(2)
-    if '-h' in args or '--help' in args:
+    if "-h" in args or "--help" in args:
         usage()
         sys.exit(2)
     merge_results(args[:])
@@ -56,20 +56,20 @@ def merge_results(xml_files):
     for file_name in xml_files:
         tree = ET.parse(file_name)
         test_suite = tree.getroot()
-        errors += int(test_suite[0].attrib['errors'])
-        failures += int(test_suite[0].attrib['failures'])
-        skipped += int(test_suite[0].attrib['skipped'])
-        tests += int(test_suite[0].attrib['tests'])
-        time += float(test_suite[0].attrib['time'])
+        errors += int(test_suite[0].attrib["errors"])
+        failures += int(test_suite[0].attrib["failures"])
+        skipped += int(test_suite[0].attrib["skipped"])
+        tests += int(test_suite[0].attrib["tests"])
+        time += float(test_suite[0].attrib["time"])
         cases.append(test_suite[0].getchildren())
 
-    new_root = ET.Element('testsuites')
-    new_testsuite = ET.Element('testsuite')
-    new_testsuite.attrib['errors'] = '%s' % errors
-    new_testsuite.attrib['failures'] = '%s' % failures
-    new_testsuite.attrib['skipped'] = '%s' % skipped
-    new_testsuite.attrib['tests'] = '%s' % tests
-    new_testsuite.attrib['time'] = '%s' % time
+    new_root = ET.Element("testsuites")
+    new_testsuite = ET.Element("testsuite")
+    new_testsuite.attrib["errors"] = "%s" % errors
+    new_testsuite.attrib["failures"] = "%s" % failures
+    new_testsuite.attrib["skipped"] = "%s" % skipped
+    new_testsuite.attrib["tests"] = "%s" % tests
+    new_testsuite.attrib["time"] = "%s" % time
     for case in cases:
         new_testsuite.extend(case)
 
@@ -80,8 +80,8 @@ def merge_results(xml_files):
 
 def usage():
     this_file = os.path.basename(__file__)
-    print('Usage:  %s results1.xml results2.xml' % this_file)
+    print("Usage:  %s results1.xml results2.xml" % this_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

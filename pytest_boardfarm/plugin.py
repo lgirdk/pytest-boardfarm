@@ -12,37 +12,46 @@ _ignore_bft = False
 def pytest_addoption(parser):
     """Add options to control the boardfarm plugin."""
     group = parser.getgroup(
-        'boardfarm',
-        'Allows for the integration of boardfam as a pytest plugin')
-    group.addoption("--bfboard",
-                    action="store",
-                    default="type1",
-                    help="board type")
-    group.addoption("--bfname",
-                    action="store",
-                    default=[],
-                    help="one or more board names (comma separated)")
-    group.addoption("--bfconfig_file",
-                    action="store",
-                    default=os.getenv('BFT_CONFIG', None),
-                    help="JSON config file for boardfarm devices")
-    group.addoption("--bfenv_file",
-                    action="store",
-                    default=os.getenv('BFT_ARGS', None),
-                    required=False,
-                    help="JSON config file for boardfarm environment")
-    group.addoption("--bfskip_boot",
-                    action="store_true",
-                    default=False,
-                    help="do not initialise the board (i.e. use it as is)")
-    group.addoption("--bffeature",
-                    action="append",
-                    default=[],
-                    help="Features required for this test run")
-    group.addoption("--bffilter",
-                    action="append",
-                    default=None,
-                    help="Regex filter off arbitrary board parameters")
+        "boardfarm", "Allows for the integration of boardfam as a pytest plugin"
+    )
+    group.addoption("--bfboard", action="store", default="type1", help="board type")
+    group.addoption(
+        "--bfname",
+        action="store",
+        default=[],
+        help="one or more board names (comma separated)",
+    )
+    group.addoption(
+        "--bfconfig_file",
+        action="store",
+        default=os.getenv("BFT_CONFIG", None),
+        help="JSON config file for boardfarm devices",
+    )
+    group.addoption(
+        "--bfenv_file",
+        action="store",
+        default=os.getenv("BFT_ARGS", None),
+        required=False,
+        help="JSON config file for boardfarm environment",
+    )
+    group.addoption(
+        "--bfskip_boot",
+        action="store_true",
+        default=False,
+        help="do not initialise the board (i.e. use it as is)",
+    )
+    group.addoption(
+        "--bffeature",
+        action="append",
+        default=[],
+        help="Features required for this test run",
+    )
+    group.addoption(
+        "--bffilter",
+        action="append",
+        default=None,
+        help="Regex filter off arbitrary board parameters",
+    )
 
 
 @pytest.hookimpl
@@ -63,14 +72,13 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "release9")
     config.addinivalue_line("markers", "svl_nightly")
     config.addinivalue_line("markers", "svl_nightly_fw")
-    config.addinivalue_line("markers",
-                            "telemetry_TR069_gpv_datatype_validation")
+    config.addinivalue_line("markers", "telemetry_TR069_gpv_datatype_validation")
     config.addinivalue_line("markers", "telemetry_TR069_simple_gpv")
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    if call.when == 'setup' and hasattr(item.session, "time_to_boot"):
+    if call.when == "setup" and hasattr(item.session, "time_to_boot"):
         call.start -= item.session.time_to_boot
         item.session.time_to_boot = 0
     yield
@@ -85,23 +93,22 @@ def pytest_cmdline_main(config):
     elif not "--capture=tee-sys" in cmdargs:
         print(
             colored(
-                "Consider using --capture=tee-sys (logging to screen and file)",
-                "red"))
+                "Consider using --capture=tee-sys (logging to screen and file)", "red"
+            )
+        )
 
 
 def save_console_logs(config, device_mgr):
     print("----- Save Console Logs -----")
     # Save console logs
     for idx, console in enumerate(device_mgr.board.consoles, start=1):
-        with open(os.path.join(config.output_dir, 'console-%s.log' % idx),
-                  'w') as clog:
+        with open(os.path.join(config.output_dir, "console-%s.log" % idx), "w") as clog:
             clog.write(console.log)
     print("There are %s devices" % len(config.devices))
     for device in config.devices:
-        with open(os.path.join(config.output_dir, device + ".log"),
-                  'w') as clog:
+        with open(os.path.join(config.output_dir, device + ".log"), "w") as clog:
             d = getattr(config, device)
-            if hasattr(d, 'log'):
+            if hasattr(d, "log"):
                 clog.write(d.log)
 
 
@@ -116,25 +123,24 @@ def boardfarm_fixtures_init(request):
         from boardfarm.bft import connect_to_devices
         from boardfarm.lib import test_configurator
 
-        board_type = request.config.getoption('--bfboard')
+        board_type = request.config.getoption("--bfboard")
         board_type = [
             board_type,
         ]  # convert to list
-        board_names = request.config.getoption('--bfname')
+        board_names = request.config.getoption("--bfname")
         if isinstance(board_names, str):
-            board_names = board_names.split(',', -1)
-        station_config_loc = request.config.getoption('--bfconfig_file')
-        env_config_loc = request.config.getoption('--bfenv_file')
-        skip_boot = request.config.getoption('--bfskip_boot')
-        features = request.config.getoption('--bffeature')
-        board_filter = request.config.getoption('--bffilter')
+            board_names = board_names.split(",", -1)
+        station_config_loc = request.config.getoption("--bfconfig_file")
+        env_config_loc = request.config.getoption("--bfenv_file")
+        skip_boot = request.config.getoption("--bfskip_boot")
+        features = request.config.getoption("--bffeature")
+        board_filter = request.config.getoption("--bffilter")
 
         # Get details about available stations (it returns a location
         # in case of redirects)
         # Note: if a file is given the _ridirect will be ingnored
-        from_file = not station_config_loc.startswith('http')
-        loc, conf = test_configurator.get_station_config(
-            station_config_loc, from_file)
+        from_file = not station_config_loc.startswith("http")
+        loc, conf = test_configurator.get_station_config(station_config_loc, from_file)
 
         # Find available stations with compatible boards (DUTs)
         names = test_configurator.filter_station_config(
@@ -142,7 +148,8 @@ def boardfarm_fixtures_init(request):
             board_type=board_type,
             board_names=board_names,
             board_features=features,
-            board_filter=board_filter)
+            board_filter=board_filter,
+        )
 
         if features or board_filter:
             print("Boards available are: {}".format(names))
@@ -163,10 +170,12 @@ def boardfarm_fixtures_init(request):
         if not skip_boot:
             try:
                 t = time.time()
-                boardfarm_docsis.lib.booting.boot(config=config,
-                                                  env_helper=env_helper,
-                                                  devices=device_mgr,
-                                                  logged=dict())
+                boardfarm_docsis.lib.booting.boot(
+                    config=config,
+                    env_helper=env_helper,
+                    devices=device_mgr,
+                    logged=dict(),
+                )
                 request.session.time_to_boot = time.time() - t
             except Exception as e:
                 print(e)
@@ -176,16 +185,17 @@ def boardfarm_fixtures_init(request):
     else:
         yield
 
-    print('Test session completed')
+    print("Test session completed")
 
 
 @pytest.fixture(scope="class", autouse=True)
 def boardfarm_fixtures(boardfarm_fixtures_init, request):
-    '''
+    """
     Create needed fixtures for boardfarm tests classes.
-    '''
+    """
     if request.cls and not _ignore_bft:
         from boardfarm.tests import bft_base_test
+
         # Connect to a station (board and devices)
         config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
         request.cls.config = config
@@ -197,8 +207,9 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
         request.cls.subtests = []
         request.cls.attempts = 0
         # the mother of all hacks
-        bft_base_test.BftBaseTest.__init__(request.instance, config,
-                                           device_mgr, env_helper)
+        bft_base_test.BftBaseTest.__init__(
+            request.instance, config, device_mgr, env_helper
+        )
 
         # End of setup
         yield
@@ -213,17 +224,17 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
 
 @pytest.fixture
 def devices(boardfarm_fixtures_init):
-    '''Fixture that returs the connected devices'''
+    """Fixture that returs the connected devices"""
     yield boardfarm_fixtures_init[1]
 
 
 @pytest.fixture
 def env_helper(boardfarm_fixtures_init):
-    '''Fixture that returns the Environment Helper'''
+    """Fixture that returns the Environment Helper"""
     yield boardfarm_fixtures_init[2]
 
 
 @pytest.fixture
 def config(boardfarm_fixtures_init):
-    '''Fixture that returns the currenet Config'''
+    """Fixture that returns the currenet Config"""
     yield boardfarm_fixtures_init[0]

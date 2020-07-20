@@ -62,15 +62,15 @@ def check_existing_marker(testsuite, file_name, test):
         f.close
 
     output = subprocess.check_output(
-        'pytest -m {} --collect-only -q {} || true'.format(
-            testsuite, file_name),
-        shell=True)
-    output = output.decode('utf-8')
-    output_as_list = [string for string in output.split('\n') if output != ""]
+        "pytest -m {} --collect-only -q {} || true".format(testsuite, file_name),
+        shell=True,
+    )
+    output = output.decode("utf-8")
+    output_as_list = [string for string in output.split("\n") if output != ""]
     marked_tcs = []
     for result in output_as_list:
-        if '::' in result:
-            marked_tcs.append(result.split('::')[1])
+        if "::" in result:
+            marked_tcs.append(result.split("::")[1])
     return bool(test in marked_tcs)
 
 
@@ -84,27 +84,31 @@ def validate_result(testsuite):
     pytest_list = []
     for folder in tests_folder:
         output = subprocess.check_output(
-            'pytest -m {} --collect-only -q {}/*.py || true'.format(
-                testsuite, folder),
-            shell=True)
-        output = output.decode('utf-8')
-        for line in output.split('\n'):
-            if line == '':
+            "pytest -m {} --collect-only -q {}/*.py || true".format(testsuite, folder),
+            shell=True,
+        )
+        output = output.decode("utf-8")
+        for line in output.split("\n"):
+            if line == "":
                 break
             else:
-                pytest_list.append(line.split('::')[1])
+                pytest_list.append(line.split("::")[1])
     difference1 = [tc for tc in tc_list if not tc in pytest_list]
     difference2 = [tc for tc in pytest_list if not tc in tc_list]
     if difference1 != []:
-        print("Missed tc's to add pytest markers for testsuite {}: {}".format(
-            testsuite, str(difference1)))
+        print(
+            "Missed tc's to add pytest markers for testsuite {}: {}".format(
+                testsuite, str(difference1)
+            )
+        )
     if difference2 != []:
         print(
             "Unexpected tc's with pytest markers for testsuite {}: {}".format(
-                testsuite, str(difference2)))
+                testsuite, str(difference2)
+            )
+        )
     if difference1 == [] and difference2 == []:
-        print("Pytest marker updation successful for testsuite {}".format(
-            testsuite))
+        print("Pytest marker updation successful for testsuite {}".format(testsuite))
 
 
 for testsuite in testsuites_list:
@@ -120,22 +124,19 @@ for testsuite in testsuites_list:
 
         # add marker if the testcase is not already marked
         if not existing_marker:
-            with open(file_name, 'r') as file:
+            with open(file_name, "r") as file:
                 filedata = file.read()
 
             # add pytest to import section
             if "import pytest" not in filedata:
-                matches = re.findall(r'import .*', filedata)
+                matches = re.findall(r"import .*", filedata)
                 for match in matches:
-                    if ('(' in match and ')' in match) or ('(' not in match):
-                        filedata = filedata.replace(match,
-                                                    match + "\nimport pytest",
-                                                    1)
+                    if ("(" in match and ")" in match) or ("(" not in match):
+                        filedata = filedata.replace(match, match + "\nimport pytest", 1)
                         break
 
-            filedata = filedata.replace(class_name,
-                                        pytest_marker + '\n' + class_name)
+            filedata = filedata.replace(class_name, pytest_marker + "\n" + class_name)
 
-            with open(file_name, 'w') as file:
+            with open(file_name, "w") as file:
                 file.write(filedata)
     validate_result(testsuite)
