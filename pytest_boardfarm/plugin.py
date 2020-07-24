@@ -52,6 +52,24 @@ def pytest_addoption(parser):
         default=None,
         help="Regex filter off arbitrary board parameters",
     )
+    group.addoption(
+        "--bfarm",
+        action="store",
+        default=None,
+        help="URL or file PATH of Arm software image to flash.",
+    )
+    group.addoption(
+        "--bfatom",
+        action="store",
+        default=None,
+        help="URL or file PATH of Atom software image to flash.",
+    )
+    group.addoption(
+        "--bfcombined",
+        action="store",
+        default=None,
+        help="URL or file PATH of ARM&ATOM Combined software image to flash.",
+    )
 
 
 @pytest.hookimpl
@@ -166,6 +184,11 @@ def boardfarm_fixtures_init(request):
         test_config.COMBINED = None
         # Connect to a station (board and devices)
         config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
+
+        config.ARM = request.config.getoption("--bfarm")
+        config.ATOM = request.config.getoption("--bfatom")
+        config.COMBINED = request.config.getoption("--bfcombined")
+
         request.session.time_to_boot = 0
         if not skip_boot:
             try:
