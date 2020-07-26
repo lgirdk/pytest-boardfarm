@@ -4,6 +4,7 @@ import time
 
 import pytest
 from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
+from py.xml import html
 from termcolor import colored
 
 _ignore_bft = False
@@ -130,6 +131,29 @@ def save_console_logs(config, device_mgr):
                 clog.write(d.log)
 
 
+def setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot):
+    """Helper function that sets a few env variables that will be used to
+    enhance the test report
+    """
+    sw = env_helper.get_software()
+    os.environ["BFT_PYTEST_REPORT_IMAGE"] = sw.get("image_uri", "")
+    os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = device_mgr.board.config.get_station()
+    os.environ["BFT_PYTEST_REPORT_PROV_MODE"] = env_helper.get_prov_mode()
+    os.environ["BFT_PYTEST_REPORT_SKIP_BOOT"] = str(skip_boot)
+
+
+def pytest_html_results_summary(prefix, summary, postfix):
+    prefix.extend([html.p(html.b("Image: "), os.getenv("BFT_PYTEST_REPORT_IMAGE", ""))])
+    prefix.extend([html.p(html.b("Board: "), os.getenv("BFT_PYTEST_REPORT_BOARDNAME"))])
+    prefix.extend(
+        [html.p(html.b("Prov Mode: "), os.getenv("BFT_PYTEST_REPORT_PROV_MODE"))]
+    )
+    if os.getenv("BFT_PYTEST_REPORT_SKIP_BOOT"):
+        prefix.extend(
+            [html.p(html.b("BOOT Skipped: "), os.getenv("BFT_PYTEST_REPORT_SKIP_BOOT"))]
+        )
+
+
 @pytest.yield_fixture(scope="session")
 def boardfarm_fixtures_init(request):
     """Initialisation fixture. Parses the comd line values. If bfboard is found
@@ -204,7 +228,9 @@ def boardfarm_fixtures_init(request):
                 print(e)
                 save_console_logs(config, device_mgr)
                 raise
+
         yield config, device_mgr, env_helper, bfweb, skip_boot
+        setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot)
     else:
         yield
 
