@@ -1,5 +1,4 @@
 pre-commit
-pytest==5.4.3
 pytest-cov
 pytest-html
 pytest-instafail
@@ -8,3 +7,4 @@ pytest-mock
 pytest-ordering
 pytest-randomly
 pytest-xdist
+pytest>=5.4.3,<6
