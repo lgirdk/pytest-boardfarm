@@ -5,9 +5,17 @@ import time
 import pytest
 from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
 from py.xml import html
+from pytest_boardfarm.tst_results import add_test_result, save_results_to_file
 from termcolor import colored
 
 _ignore_bft = False
+
+
+def get_result_dir():
+    owrt_tests_dir = os.path.join(os.getcwd(), "results", "")
+    if not os.path.exists(owrt_tests_dir):
+        os.makedirs(owrt_tests_dir)
+    return owrt_tests_dir
 
 
 def pytest_addoption(parser):
@@ -71,6 +79,12 @@ def pytest_addoption(parser):
         default=None,
         help="URL or file PATH of ARM&ATOM Combined software image to flash.",
     )
+    group.addoption(
+        "--bfoutput_dir",
+        action="store",
+        default=get_result_dir(),
+        help="Directory for the output results files",
+    )
 
 
 @pytest.hookimpl
@@ -100,6 +114,9 @@ def pytest_runtest_makereport(item, call):
     if call.when == "setup" and hasattr(item.session, "time_to_boot"):
         call.start -= item.session.time_to_boot
         item.session.time_to_boot = 0
+    elif call.when == "teardown":
+        add_test_result(item, call)
+        save_results_to_file()
     yield
 
 
