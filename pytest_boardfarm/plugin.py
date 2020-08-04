@@ -109,7 +109,7 @@ def pytest_cmdline_main(config):
     if "--bfboard" not in cmdargs:
         global _ignore_bft
         _ignore_bft = True
-    elif not "--capture=tee-sys" in cmdargs:
+    elif "--capture=tee-sys" not in cmdargs:
         print(
             colored(
                 "Consider using --capture=tee-sys (logging to screen and file)", "red"

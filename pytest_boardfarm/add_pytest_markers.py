@@ -93,8 +93,8 @@ def validate_result(testsuite):
                 break
             else:
                 pytest_list.append(line.split("::")[1])
-    difference1 = [tc for tc in tc_list if not tc in pytest_list]
-    difference2 = [tc for tc in pytest_list if not tc in tc_list]
+    difference1 = [tc for tc in tc_list if tc not in pytest_list]
+    difference2 = [tc for tc in pytest_list if tc not in tc_list]
     if difference1 != []:
         print(
             "Missed tc's to add pytest markers for testsuite {}: {}".format(
