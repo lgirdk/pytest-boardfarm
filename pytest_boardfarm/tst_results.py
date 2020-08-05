@@ -35,13 +35,13 @@ class Results(dict):
     @staticmethod
     def getInstance(location="results/test_results.json"):
         """Static: Returns the singleton instance of the class"""
-        if Results.__instance == None:
+        if Results.__instance is None:
             Results(location)
         return Results.__instance
 
     def __init__(self, location):
         """Initilises the class instance if not already present, raise and exception otherwise"""
-        if Results.__instance != None:
+        if Results.__instance is not None:
             raise Exception("Results class is a singleton!")
         else:
             Results.__instance = self

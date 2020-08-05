@@ -37,5 +37,5 @@ setup(
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
     ],
-    entry_points={"pytest11": ["pytest_boardfarm = pytest_boardfarm.plugin",],},
+    entry_points={"pytest11": ["pytest_boardfarm = pytest_boardfarm.plugin"]},
 )
