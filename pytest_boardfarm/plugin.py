@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import time
 
 import pytest
@@ -165,7 +166,9 @@ def pytest_html_results_summary(prefix, summary, postfix):
     prefix.extend(
         [html.p(html.b("Prov Mode: "), os.getenv("BFT_PYTEST_REPORT_PROV_MODE"))]
     )
-    if os.getenv("BFT_PYTEST_REPORT_SKIP_BOOT"):
+    if os.getenv("BFT_PYTEST_BOOT_FAILED"):
+        prefix.extend([html.p(html.b("--==** FAILED ON BOOT **==--"))])
+    elif os.getenv("BFT_PYTEST_REPORT_SKIP_BOOT"):
         prefix.extend(
             [html.p(html.b("BOOT Skipped: "), os.getenv("BFT_PYTEST_REPORT_SKIP_BOOT"))]
         )
@@ -229,7 +232,7 @@ def boardfarm_fixtures_init(request):
         config.ARM = request.config.getoption("--bfarm")
         config.ATOM = request.config.getoption("--bfatom")
         config.COMBINED = request.config.getoption("--bfcombined")
-
+        setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot)
         request.session.time_to_boot = 0
         if not skip_boot:
             try:
@@ -244,10 +247,10 @@ def boardfarm_fixtures_init(request):
             except Exception as e:
                 print(e)
                 save_console_logs(config, device_mgr)
-                raise
+                os.environ["BFT_PYTEST_BOOT_FAILED"] = str(skip_boot)
+                pytest.exit("BFT_PYTEST_BOOT_FAILED")
 
         yield config, device_mgr, env_helper, bfweb, skip_boot
-        setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot)
     else:
         yield
 
