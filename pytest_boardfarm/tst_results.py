@@ -82,8 +82,8 @@ def add_results(test_result):
         d["tests_teardown_fail"] += 1
     elif test_result["grade"] == "Unexp OK":
         d["unexpected_pass"] += 1
-    elif test_result["grade"] == "Unexp OK":
-        d["unexpected_fail"] += 1
+    elif test_result["grade"] == "Exp FAIL":
+        d["expected_fail"] += 1
     d["tests_total"] += 1
 
 
