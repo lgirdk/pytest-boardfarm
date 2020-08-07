@@ -1,10 +1,10 @@
+git+git://github.com/karrukola/pytest-ordering.git@karrukola-runlast
 pre-commit
 pytest-cov
 pytest-html
 pytest-instafail
 pytest-json
 pytest-mock
-pytest-ordering
 pytest-randomly
 pytest-xdist
 pytest>=5.4.3,<6
