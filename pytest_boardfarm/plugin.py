@@ -6,7 +6,11 @@ import time
 import pytest
 from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
 from py.xml import html
-from pytest_boardfarm.tst_results import add_test_result, save_results_to_file
+from pytest_boardfarm.tst_results import (
+    add_test_result,
+    save_results_to_file,
+    save_results_to_html_file,
+)
 from termcolor import colored
 
 _ignore_bft = False
@@ -251,6 +255,7 @@ def boardfarm_fixtures_init(request):
                 pytest.exit("BFT_PYTEST_BOOT_FAILED")
 
         yield config, device_mgr, env_helper, bfweb, skip_boot
+        save_results_to_html_file(config)
     else:
         yield
 

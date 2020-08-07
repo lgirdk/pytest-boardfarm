@@ -53,6 +53,14 @@ class Results(dict):
         with open(Results.__location, mode="w") as f:
             json.dump(self, f, indent=4, sort_keys=True)
 
+    def dump_to_html_file(self, config):
+        """Saves the dictionary (json) to file in html format"""
+        from boardfarm import library
+        import logging
+
+        logger = logging.getLogger("bft")
+        library.create_results_html(self, config, logger)
+
 
 def add_results(test_result):
     """Updates the session results dict in a similar way to what is generated in
@@ -107,3 +115,10 @@ def save_results_to_file():
     """
     d = Results.getInstance()
     d.dump_to_file()
+
+
+def save_results_to_html_file(config):
+    """Saves the test result dictionary to .json file
+    """
+    d = Results.getInstance()
+    d.dump_to_html_file(config)
