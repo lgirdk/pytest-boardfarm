@@ -3,7 +3,6 @@ import os
 import time
 
 import pytest
-from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
 from py.xml import html
 from pytest_boardfarm.tst_results import (
     add_test_result,
@@ -287,8 +286,13 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
         # End of setup
         yield
 
-        if request.cls.test_obj and "FAIL" in request.cls.test_obj.result_grade:
-            PreConditionCheck._cache_contingency = -1
+        try:
+            from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
+
+            if request.cls.test_obj and "FAIL" in request.cls.test_obj.result_grade:
+                PreConditionCheck._cache_contingency = -1
+        except ImportError:
+            pass
 
         save_console_logs(config, device_mgr)
     else:
