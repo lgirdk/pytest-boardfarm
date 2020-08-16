@@ -3,6 +3,7 @@ import os
 import time
 
 import pytest
+from boardfarm.lib.bft_logging import write_test_log
 from py.xml import html
 from pytest_boardfarm.tst_results import (
     add_test_result,
@@ -117,10 +118,16 @@ def pytest_runtest_makereport(item, call):
     if call.when == "setup" and hasattr(item.session, "time_to_boot"):
         call.start -= item.session.time_to_boot
         item.session.time_to_boot = 0
-    elif call.when == "teardown":
+    yield
+    if call.when == "teardown":
         add_test_result(item, call)
         save_results_to_file()
-    yield
+        if (
+            hasattr(item, "cls")
+            and hasattr(item.cls, "test_obj")
+            and hasattr(item.cls.test_obj, "log_to_file")
+        ):
+            write_test_log(item.cls.test_obj, get_result_dir())
 
 
 @pytest.mark.tryfirst
