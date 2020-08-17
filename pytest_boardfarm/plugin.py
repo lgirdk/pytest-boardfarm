@@ -130,6 +130,11 @@ def pytest_runtest_makereport(item, call):
             write_test_log(item.cls.test_obj, get_result_dir())
 
 
+def pytest_sessionfinish(session, exitstatus):
+    if hasattr(session, "bft_config"):
+        save_results_to_html_file(session.bft_config)
+
+
 @pytest.mark.tryfirst
 def pytest_cmdline_main(config):
     cmdargs = config.invocation_params.args
@@ -243,6 +248,7 @@ def boardfarm_fixtures_init(request):
         config.COMBINED = request.config.getoption("--bfcombined")
         setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot)
         request.session.time_to_boot = 0
+        request.session.bft_config = config
         if not skip_boot:
             try:
                 t = time.time()
@@ -260,7 +266,6 @@ def boardfarm_fixtures_init(request):
                 pytest.exit("BFT_PYTEST_BOOT_FAILED")
 
         yield config, device_mgr, env_helper, bfweb, skip_boot
-        save_results_to_html_file(config)
     else:
         yield
 
