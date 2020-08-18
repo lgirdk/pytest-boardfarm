@@ -301,7 +301,11 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
         try:
             from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
 
-            if request.cls.test_obj and "FAIL" in request.cls.test_obj.result_grade:
+            if (
+                request.cls.test_obj
+                and hasattr(request.cls.test_obj, "result_grade")
+                and "FAIL" in request.cls.test_obj.result_grade
+            ):
                 PreConditionCheck._cache_contingency = -1
         except ImportError:
             pass
