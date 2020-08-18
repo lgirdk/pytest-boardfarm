@@ -126,6 +126,7 @@ def pytest_runtest_makereport(item, call):
             hasattr(item, "cls")
             and hasattr(item.cls, "test_obj")
             and hasattr(item.cls.test_obj, "log_to_file")
+            and hasattr(item.cls.test_obj, "result_grade")
         ):
             write_test_log(item.cls.test_obj, get_result_dir())
 
