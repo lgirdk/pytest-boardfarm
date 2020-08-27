@@ -228,8 +228,7 @@ def boardfarm_fixtures_init(request):
             board_filter=board_filter,
         )
 
-        if features or board_filter:
-            print("Boards available are: {}".format(names))
+        print("Boards available are: {}".format(names))
 
         # Setup test configuration
         test_config = test_configurator.BoardfarmTestConfig()
