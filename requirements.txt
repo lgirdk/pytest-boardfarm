@@ -7,4 +7,4 @@ pytest-json
 pytest-mock
 pytest-randomly
 pytest-xdist
-pytest>=5.4.3,<6
+pytest>6
