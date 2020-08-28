@@ -103,7 +103,10 @@ def add_test_result(item, call):
         name = item.name
 
     r = result_template.copy()
-    r["elapsed_time"] = time.time() - call.start
+    if hasattr(item.cls, "test_obj"):
+        r["elapsed_time"] = item.cls.test_obj.stop_time - item.cls.test_obj.start_time
+    else:
+        r["elapsed_time"] = time.time() - call.start
     r["grade"] = grade
     r["message"] = doc
     r["name"] = name
