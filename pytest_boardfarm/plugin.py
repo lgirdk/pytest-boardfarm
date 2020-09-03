@@ -5,6 +5,7 @@ import time
 import pytest
 from boardfarm.lib.bft_logging import write_test_log
 from py.xml import html
+from pytest_boardfarm.connections import bf_connect
 from pytest_boardfarm.tst_results import (
     add_test_result,
     save_results_to_file,
@@ -195,53 +196,10 @@ def boardfarm_fixtures_init(request):
     attempts connecting to a device and returns the Device Manager, Environment
     Config helper, otherwise the fixture has no effect.
     """
+    import boardfarm_docsis.lib.booting
+
     if not _ignore_bft:
-        import boardfarm_docsis.lib.booting
-        from boardfarm.bft import connect_to_devices
-        from boardfarm.lib import test_configurator
-
-        board_type = request.config.getoption("--bfboard")
-        board_type = [
-            board_type,
-        ]  # convert to list
-        board_names = request.config.getoption("--bfname")
-        if isinstance(board_names, str):
-            board_names = board_names.split(",", -1)
-        station_config_loc = request.config.getoption("--bfconfig_file")
-        env_config_loc = request.config.getoption("--bfenv_file")
-        skip_boot = request.config.getoption("--bfskip_boot")
-        features = request.config.getoption("--bffeature")
-        board_filter = request.config.getoption("--bffilter")
-
-        # Get details about available stations (it returns a location
-        # in case of redirects)
-        # Note: if a file is given the _ridirect will be ingnored
-        from_file = not station_config_loc.startswith("http")
-        loc, conf = test_configurator.get_station_config(station_config_loc, from_file)
-
-        # Find available stations with compatible boards (DUTs)
-        names = test_configurator.filter_station_config(
-            conf,
-            board_type=board_type,
-            board_names=board_names,
-            board_features=features,
-            board_filter=board_filter,
-        )
-
-        print("Boards available are: {}".format(names))
-
-        # Setup test configuration
-        test_config = test_configurator.BoardfarmTestConfig()
-        test_config.BOARD_NAMES = names
-        test_config.boardfarm_config_location = loc
-        test_config.boardfarm_config = conf
-        test_config.test_args_location = env_config_loc
-
-        test_config.ARM = None
-        test_config.ATOM = None
-        test_config.COMBINED = None
-        # Connect to a station (board and devices)
-        config, device_mgr, env_helper, bfweb = connect_to_devices(test_config)
+        config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(request.config)
 
         config.ARM = request.config.getoption("--bfarm")
         config.ATOM = request.config.getoption("--bfatom")
