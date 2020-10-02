@@ -3,6 +3,8 @@ import os
 import time
 
 import pytest
+from boardfarm.bft import logger
+from boardfarm.exceptions import BftSysExit
 from boardfarm.lib.bft_logging import write_test_log
 from py.xml import html
 from termcolor import colored
@@ -200,7 +202,20 @@ def boardfarm_fixtures_init(request):
     import boardfarm_docsis.lib.booting
 
     if not _ignore_bft:
-        config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(request.config)
+        try:
+            config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(
+                request.config
+            )
+        except (BftSysExit, SystemExit) as e:
+            os.environ[
+                "BFT_PYTEST_REPORT_BOARDNAME"
+            ] = f"Could not connect to any boards ({repr(e)})"
+            pytest.exit(e)
+        except Exception as e:
+            msg = f"Unhandled exception on connection: {repr(e)}"
+            logger.error(msg)
+            os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = msg
+            pytest.exit(e)
 
         config.ARM = request.config.getoption("--bfarm")
         config.ATOM = request.config.getoption("--bfatom")

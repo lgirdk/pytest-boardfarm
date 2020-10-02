@@ -1,5 +1,7 @@
-from boardfarm.bft import connect_to_devices
+from boardfarm.bft import connect_to_devices, logger
+from boardfarm.exceptions import BftSysExit
 from boardfarm.lib import test_configurator
+from termcolor import colored
 
 
 def bf_connect(config):
@@ -31,7 +33,14 @@ def bf_connect(config):
         board_filter=board_filter,
     )
 
-    print("Boards available are: {}".format(names))
+    if names:
+        logger.info(
+            colored(f"Boards available are: {names}", color="green", attrs=["bold"])
+        )
+    else:
+        msg = "No boards available!!!!"
+        logger.error(colored(msg, "red"))
+        raise BftSysExit(msg)
 
     # Setup test configuration
     test_config = test_configurator.BoardfarmTestConfig()
