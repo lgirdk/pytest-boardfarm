@@ -55,8 +55,9 @@ class Results(dict):
 
     def dump_to_html_file(self, config):
         """Saves the dictionary (json) to file in html format"""
-        from boardfarm import library
         import logging
+
+        from boardfarm import library
 
         logger = logging.getLogger("bft")
         library.create_results_html(self, config, logger)
@@ -114,14 +115,12 @@ def add_test_result(item, call):
 
 
 def save_results_to_file():
-    """Saves the test result dictionary to .json file
-    """
+    """Saves the test result dictionary to .json file"""
     d = Results.getInstance()
     d.dump_to_file()
 
 
 def save_results_to_html_file(config):
-    """Saves the test result dictionary to .json file
-    """
+    """Saves the test result dictionary to .json file"""
     d = Results.getInstance()
     d.dump_to_html_file(config)

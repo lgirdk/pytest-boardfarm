@@ -30,10 +30,10 @@ import xml.etree.ElementTree as ET
 def main():
     """Merge multiple JUnit XML files into a single results file.
 
-        Output dumps to stdout.
+    Output dumps to stdout.
 
-        example usage:
-        $ python merge_junit_results.py results1.xml results2.xml > results.xml
+    example usage:
+    $ python merge_junit_results.py results1.xml results2.xml > results.xml
     """
 
     args = sys.argv[1:]
