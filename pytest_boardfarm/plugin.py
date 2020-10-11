@@ -3,7 +3,6 @@ import os
 import time
 
 import pytest
-import xmltodict
 from boardfarm.bft import logger
 from boardfarm.exceptions import BftSysExit
 from boardfarm.lib.bft_logging import write_test_log
@@ -94,44 +93,6 @@ def pytest_addoption(parser):
         default=get_result_dir(),
         help="Directory for the output results files",
     )
-    group.addoption(
-        "--bfignore_xml_errors",
-        action="store_true",
-        default=False,
-        help="Ignores junitxml errors (if any)",
-    )
-    group.addoption(
-        "--bfignore_xml_skipped",
-        action="store_true",
-        default=False,
-        help="Ignores junitxml skiped tests (if any)",
-    )
-
-
-def _check_xml(session, ignore_errors, ignore_skipped):
-    """Checks the junitxml file (if present) and fails pytest (with err=1) if
-    there are either skipped tests or errors. This behaviour can be overriden
-    via command line switches"""
-    fname = session.config.getoption("--junitxml")
-    if fname is None:
-        logger.warn("cannot find junitxml result file")
-        return
-    data = None
-    with open(fname, "r") as xmlfile:
-        data = xmlfile.read().replace("\n", "")
-    xmldict = xmltodict.parse(data, attr_prefix="")
-
-    errors = xmldict["testsuites"]["testsuite"]["errors"]
-    skipped = xmldict["testsuites"]["testsuite"]["skipped"]
-
-    if not ignore_errors and errors != "0":
-        logger.error(f"Found {errors} errors in {fname}, forcing failure on exit")
-        session.exitstatus = 1  # TESTS_FAILED
-    if not ignore_skipped and skipped != "0":
-        logger.error(
-            f"Found {skipped} skipped tests in {fname}, forcing failure on exit"
-        )
-        session.exitstatus = 1  # TESTS_FAILED
 
 
 @pytest.hookimpl
@@ -175,13 +136,6 @@ def pytest_runtest_makereport(item, call):
 
 
 def pytest_sessionfinish(session, exitstatus):
-    if exitstatus == 0:
-        _check_xml(
-            session.session,
-            session.config.getoption("--bfignore_xml_errors"),
-            session.config.getoption("--bfignore_xml_skipped"),
-        )
-
     if hasattr(session, "bft_config"):
         save_results_to_html_file(session.bft_config)
 
