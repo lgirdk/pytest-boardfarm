@@ -91,7 +91,11 @@ def add_results(test_result):
 def add_test_result(item, call):
     """Add a test result outcome to the test_results dictionary"""
     # is this coming from bft or is it a pytest styled test?
-    if "test_main" in item.name and hasattr(item.parent.obj.test_obj, "result_grade"):
+    if (
+        "test_main" in item.name
+        and hasattr(item.parent.obj, "test_obj")
+        and hasattr(item.parent.obj.test_obj, "result_grade")
+    ):
         # this is for legacy bft tests, they are all classes
         grade = item.parent.obj.test_obj.result_grade
         doc = item.parent.obj.test_obj.__doc__
