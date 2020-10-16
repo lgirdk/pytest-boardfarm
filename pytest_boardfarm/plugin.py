@@ -3,6 +3,7 @@ import os
 import time
 
 import pytest
+from _pytest.config import ExitCode
 from boardfarm.bft import logger
 from boardfarm.exceptions import BftSysExit
 from boardfarm.lib.bft_logging import write_test_log
@@ -147,12 +148,15 @@ def pytest_cmdline_main(config):
     if "--bfboard" not in cmdargs:
         global _ignore_bft
         _ignore_bft = True
-    elif "--capture=tee-sys" not in cmdargs:
-        print(
-            colored(
-                "Consider using --capture=tee-sys (logging to screen and file)", "red"
-            )
-        )
+
+    if not _ignore_bft and "--bfconfig_file" in cmdargs and "--bfname" not in cmdargs:
+        msg = "If overriding the dashboard from cli a board name MUST be given"
+        logger.error(colored(msg, "red", attrs=["bold"]))
+        pytest.exit(msg=msg, returncode=ExitCode.USAGE_ERROR)
+
+    if not _ignore_bft and "--capture=tee-sys" not in cmdargs:
+        msg = "Consider using --capture=tee-sys (logging to screen and file)"
+        logger.info(colored(msg, "yellow"))
 
 
 def save_console_logs(config, device_mgr):
