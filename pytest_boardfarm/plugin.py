@@ -14,6 +14,7 @@ from pytest_boardfarm.tst_results import (
     add_test_result,
     save_results_to_file,
     save_results_to_html_file,
+    save_station_to_file,
 )
 
 _ignore_bft = False
@@ -216,6 +217,9 @@ def boardfarm_fixtures_init(request):
             logger.error(msg)
             os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = msg
             pytest.exit(e)
+
+        # save station name to file
+        save_station_to_file(device_mgr.board.config.get_station())
 
         config.ARM = request.config.getoption("--bfarm")
         config.ATOM = request.config.getoption("--bfatom")
