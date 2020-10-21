@@ -128,3 +128,9 @@ def save_results_to_html_file(config):
     """Saves the test result dictionary to .json file"""
     d = Results.getInstance()
     d.dump_to_html_file(config)
+
+
+def save_station_to_file(station, path="results/station_name.txt"):
+    """ save board station name to results file to be used in grovvy script"""
+    with open(path, "w") as fp:
+        fp.write(station)
