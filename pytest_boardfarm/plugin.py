@@ -97,28 +97,6 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.hookimpl
-def pytest_configure(config):
-    config.addinivalue_line("markers", "ams_automated_stable_tcs")
-    config.addinivalue_line("markers", "bf_lgi_selftest")
-    config.addinivalue_line("markers", "bft_released_tests")
-    config.addinivalue_line("markers", "Config_File_Testcases")
-    config.addinivalue_line("markers", "DUT_Reboot_tcs")
-    config.addinivalue_line("markers", "lgirdk_mvx")
-    config.addinivalue_line("markers", "release10")
-    config.addinivalue_line("markers", "release11")
-    config.addinivalue_line("markers", "release12")
-    config.addinivalue_line("markers", "release3")
-    config.addinivalue_line("markers", "release3_FW_up_downgrade")
-    config.addinivalue_line("markers", "release4_FW_up_downgrade")
-    config.addinivalue_line("markers", "release5")
-    config.addinivalue_line("markers", "release9")
-    config.addinivalue_line("markers", "svl_nightly")
-    config.addinivalue_line("markers", "svl_nightly_fw")
-    config.addinivalue_line("markers", "telemetry_TR069_gpv_datatype_validation")
-    config.addinivalue_line("markers", "telemetry_TR069_simple_gpv")
-
-
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     if call.when == "setup" and hasattr(item.session, "time_to_boot"):
