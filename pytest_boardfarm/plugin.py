@@ -5,7 +5,7 @@ import time
 import pytest
 from _pytest.config import ExitCode
 from boardfarm.bft import logger
-from boardfarm.exceptions import BftSysExit
+from boardfarm.exceptions import BftEnvMismatch, BftSysExit
 from boardfarm.lib.bft_logging import write_test_log
 from py.xml import html
 from termcolor import colored
@@ -99,9 +99,10 @@ def pytest_addoption(parser):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    if call.when == "setup" and hasattr(item.session, "time_to_boot"):
-        call.start -= item.session.time_to_boot
-        item.session.time_to_boot = 0
+    if call.when == "setup":
+        if hasattr(item.session, "time_to_boot"):
+            call.start -= item.session.time_to_boot
+            item.session.time_to_boot = 0
     yield
     if call.when == "teardown":
         add_test_result(item, call)
@@ -113,6 +114,15 @@ def pytest_runtest_makereport(item, call):
             and hasattr(item.cls.test_obj, "result_grade")
         ):
             write_test_log(item.cls.test_obj, get_result_dir())
+
+
+def pytest_runtest_call(item):
+    env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
+    if hasattr(item.session, "env_helper") and env_request:
+        try:
+            item.session.env_helper.env_check(env_request[0])
+        except BftEnvMismatch:
+            pytest.skip("Environment mismatch. Skipping")
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -178,7 +188,7 @@ def pytest_html_results_summary(prefix, summary, postfix):
 
 @pytest.yield_fixture(scope="session")
 def boardfarm_fixtures_init(request):
-    """Initialisation fixture. Parses the comd line values. If bfboard is found
+    """Initialisation fixture. Parses the cmd line values. If bfboard is found
     attempts connecting to a device and returns the Device Manager, Environment
     Config helper, otherwise the fixture has no effect.
     """
@@ -209,6 +219,7 @@ def boardfarm_fixtures_init(request):
         setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot)
         request.session.time_to_boot = 0
         request.session.bft_config = config
+        request.session.env_helper = env_helper
         if not skip_boot:
             try:
                 t = time.time()
