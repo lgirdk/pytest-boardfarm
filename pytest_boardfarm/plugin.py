@@ -16,6 +16,7 @@ from pytest_boardfarm.tst_results import (
     save_results_to_file,
     save_results_to_html_file,
     save_station_to_file,
+    send_results_to_elasticsearch,
 )
 
 _ignore_bft = False
@@ -128,6 +129,7 @@ def pytest_runtest_call(item):
 def pytest_sessionfinish(session, exitstatus):
     if hasattr(session, "bft_config"):
         save_results_to_html_file(session.bft_config)
+        send_results_to_elasticsearch(session.bft_config)
 
 
 @pytest.mark.tryfirst

@@ -2,6 +2,8 @@
 import json
 import time
 
+from boardfarm.lib.common import send_to_elasticsearch
+
 result_template = {
     "elapsed_time": None,
     "grade": "",
@@ -128,6 +130,16 @@ def save_results_to_html_file(config):
     """Saves the test result dictionary to .json file"""
     d = Results.getInstance()
     d.dump_to_html_file(config)
+
+
+def send_results_to_elasticsearch(config):
+    """ Sends results to elasticsearch if it is configured"""
+    if getattr(config, "elasticsearch_server", None):
+        send_to_elasticsearch(config.elasticsearch_server, Results.getInstance())
+    else:
+        print(
+            "ElasticSerach Server is not configured. Set 'BFT_ELASTICSERVER' variable in enviornment with valid ElasticSearch URL"
+        )
 
 
 def save_station_to_file(station, path="results/station_name.txt"):
