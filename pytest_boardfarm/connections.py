@@ -13,6 +13,10 @@ def bf_connect(config):
     if isinstance(board_names, str):
         board_names = board_names.split(",", -1)
     station_config_loc = config.getoption("--bfconfig_file")
+    if not station_config_loc:
+        msg = "No inventory file provided (either use env variable or --bfconfig_file)!!!!"
+        logger.error(colored(msg, "red"))
+        raise BftSysExit(msg)
     env_config_loc = config.getoption("--bfenv_file")
     skip_boot = config.getoption("--bfskip_boot")
     features = config.getoption("--bffeature")
