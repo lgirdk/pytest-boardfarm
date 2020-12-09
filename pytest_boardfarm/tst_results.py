@@ -1,8 +1,14 @@
 """This file contains some helper methods for generating test_results.json"""
 import json
+import logging
 import time
 
+from boardfarm import library
 from boardfarm.lib.common import send_to_elasticsearch
+from termcolor import colored
+
+logger = logging.getLogger("bft")
+
 
 result_template = {
     "elapsed_time": None,
@@ -57,9 +63,6 @@ class Results(dict):
 
     def dump_to_html_file(self, config):
         """Saves the dictionary (json) to file in html format"""
-        import logging
-
-        from boardfarm import library
 
         logger = logging.getLogger("bft")
         library.create_results_html(self, config, logger)
@@ -102,12 +105,25 @@ def add_test_result(item, call):
         grade = item.parent.obj.test_obj.result_grade
         doc = item.parent.obj.test_obj.__doc__
         name = item.parent.name
-    else:
+    elif hasattr(item.parent.obj, "test_obj") is False:
         # pytests format tests "should" all be functions
-        grade = "OK" if not call.result else "FAIL"
-        # coudl not get the docstring of the function, dunno why
+        # to be revisited (as in future we could have several
+        # tests in a class!!!!
+        grade = "FAIL" if call.excinfo else "OK"
+        # could not get the docstring of the function, dunno why
         doc = "{}::{}".format(item.location[0], item.location[2])
         name = item.name
+    else:
+        logger.error(
+            colored(
+                f"Failed to add result to  json file for: {str(item.location)}",
+                color="green",
+                attrs=["bold"],
+            )
+        )
+        grade = "UNKNOWN"
+        name = item.name
+        doc = "{}::{}".format(item.location[0], item.location[2])
 
     r = result_template.copy()
     if hasattr(item.cls, "test_obj"):

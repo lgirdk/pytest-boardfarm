@@ -105,7 +105,11 @@ def pytest_runtest_makereport(item, call):
             call.start -= item.session.time_to_boot
             item.session.time_to_boot = 0
     yield
-    if call.when == "teardown":
+    if call.when == "call" and item.cls is None:
+        # this is a pytest test (i.e. a function)
+        add_test_result(item, call)
+        save_results_to_file()
+    if call.when == "teardown" and item.cls:
         add_test_result(item, call)
         save_results_to_file()
         if (
