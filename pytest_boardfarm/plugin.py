@@ -16,7 +16,6 @@ from pytest_boardfarm.tst_results import (
     save_results_to_file,
     save_results_to_html_file,
     save_station_to_file,
-    send_results_to_elasticsearch,
 )
 
 _ignore_bft = False
@@ -133,7 +132,7 @@ def pytest_runtest_call(item):
 def pytest_sessionfinish(session, exitstatus):
     if hasattr(session, "bft_config"):
         save_results_to_html_file(session.bft_config)
-        send_results_to_elasticsearch(session.bft_config)
+        report_pytestrun_to_elk(session)
 
 
 @pytest.mark.tryfirst
@@ -308,3 +307,43 @@ def env_helper(boardfarm_fixtures_init):
 def config(boardfarm_fixtures_init):
     """Fixture that returns the currenet Config"""
     yield boardfarm_fixtures_init[0]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def configure_elk(elk_reporter):
+    elk_reporter.es_index_name = "boardfarmrun"
+    elk_reporter.session_data.update(
+        {
+            "build_url": os.environ.get("BUILD_URL", None),
+            "test_ids": [],
+            "test_time": [],
+        }
+    )
+
+
+def report_pytestrun_to_elk(session):
+    """
+    send pytest test run information to elk
+    """
+    if not session.bft_config.elasticsearch_server:
+        return
+
+    session.config.elk.es_address = session.bft_config.elasticsearch_server
+
+    keys = [
+        "build_url",
+        "username",
+        "hostname",
+        "session_start_time",
+    ]
+    test_data = {k: session.config.elk.session_data[k] for k in keys}
+    test_data["board_id"] = os.environ.get("BFT_PYTEST_REPORT_BOARDNAME", None)
+
+    for i, id in enumerate(session.config.elk.session_data["test_ids"]):
+        test_data["test_start_time"] = session.config.elk.session_data["test_time"][i][
+            0
+        ]
+        test_data["test_end_time"] = session.config.elk.session_data["test_time"][i][1]
+        test_data["test_id"] = "Manual" if "Interact" in id else id
+        logger.info(f"Logging Data to ELK: {test_data}")
+        session.config.elk.post_to_elasticsearch(test_data)

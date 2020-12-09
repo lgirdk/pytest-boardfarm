@@ -4,7 +4,6 @@ import logging
 import time
 
 from boardfarm import library
-from boardfarm.lib.common import send_to_elasticsearch
 from termcolor import colored
 
 logger = logging.getLogger("bft")
@@ -126,10 +125,23 @@ def add_test_result(item, call):
         doc = "{}::{}".format(item.location[0], item.location[2])
 
     r = result_template.copy()
-    if hasattr(item.cls, "test_obj"):
-        r["elapsed_time"] = item.cls.test_obj.stop_time - item.cls.test_obj.start_time
-    else:
-        r["elapsed_time"] = time.time() - call.start
+
+    try:
+        end_time, start_time = item.cls.test_obj.stop_time, item.cls.test_obj.start_time
+    except Exception:
+        start_time, end_time = call.start, time.time()
+
+    # update elk session data
+    if "test_ids" in item.session.config.elk.session_data:
+        item.session.config.elk.session_data["test_ids"].append(name)
+        item.session.config.elk.session_data["test_time"].append(
+            (
+                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_time)),
+                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end_time)),
+            )
+        )
+
+    r["elapsed_time"] = end_time - end_time
     r["grade"] = grade
     r["message"] = doc
     r["name"] = name
@@ -146,16 +158,6 @@ def save_results_to_html_file(config):
     """Saves the test result dictionary to .json file"""
     d = Results.getInstance()
     d.dump_to_html_file(config)
-
-
-def send_results_to_elasticsearch(config):
-    """ Sends results to elasticsearch if it is configured"""
-    if getattr(config, "elasticsearch_server", None):
-        send_to_elasticsearch(config.elasticsearch_server, Results.getInstance())
-    else:
-        print(
-            "ElasticSerach Server is not configured. Set 'BFT_ELASTICSERVER' variable in enviornment with valid ElasticSearch URL"
-        )
 
 
 def save_station_to_file(station, path="results/station_name.txt"):

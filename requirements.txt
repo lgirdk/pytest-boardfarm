@@ -2,6 +2,7 @@ git+git://github.com/karrukola/pytest-ordering.git@karrukola-runlast
 pre-commit
 pytest>6
 pytest-cov
+pytest-elk-reporter
 pytest-html
 pytest-instafail
 pytest-json
