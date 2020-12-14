@@ -319,6 +319,15 @@ def configure_elk(elk_reporter):
             "test_time": [],
         }
     )
+    # set pytest verbose level 2 to stop executing elk-reporter pytest_terminal_summary
+    elk_reporter.config.option.verbose = 2
+
+    if os.environ.get("BFT_ELASTICSERVER", None) is None:
+        raise Exception(
+            """Elasticsearch Server is not Configured
+Configure Elasticsearch Server by executing following command in shell
+$ export BFT_ELASTICSERVER="http://10.64.38.15:9200" """
+        )
 
 
 def report_pytestrun_to_elk(session):
