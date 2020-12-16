@@ -7,5 +7,6 @@ pytest-html
 pytest-instafail
 pytest-json
 pytest-mock
+pytest-picked
 pytest-randomly
 pytest-xdist
