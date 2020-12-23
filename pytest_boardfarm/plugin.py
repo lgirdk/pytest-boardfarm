@@ -2,7 +2,6 @@
 import os
 import time
 
-import boardfarm.logging_config  # noqa  F401
 import pytest
 from _pytest.config import ExitCode
 from boardfarm.bft import logger
@@ -154,12 +153,12 @@ def pytest_cmdline_main(config):
 
 
 def save_console_logs(config, device_mgr):
-    logger.info("----- Save Console Logs -----")
+    print("----- Save Console Logs -----")
     # Save console logs
     for idx, console in enumerate(device_mgr.board.consoles, start=1):
         with open(os.path.join(config.output_dir, "console-%s.log" % idx), "w") as clog:
             clog.write(console.log)
-    logger.info("There are %s devices" % len(config.devices))
+    print("There are %s devices" % len(config.devices))
     for device in config.devices:
         with open(os.path.join(config.output_dir, device + ".log"), "w") as clog:
             d = getattr(config, device)
@@ -237,7 +236,7 @@ def boardfarm_fixtures_init(request):
                 )
                 request.session.time_to_boot = time.time() - t
             except Exception as e:
-                logger.debug(e)
+                print(e)
                 save_console_logs(config, device_mgr)
                 os.environ["BFT_PYTEST_BOOT_FAILED"] = str(skip_boot)
                 pytest.exit("BFT_PYTEST_BOOT_FAILED")
@@ -246,7 +245,7 @@ def boardfarm_fixtures_init(request):
     else:
         yield
 
-    logger.info("Test session completed")
+    print("Test session completed")
 
 
 @pytest.fixture(scope="class", autouse=True)
