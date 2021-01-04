@@ -191,7 +191,7 @@ def pytest_html_results_summary(prefix, summary, postfix):
         )
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def boardfarm_fixtures_init(request):
     """Initialisation fixture. Parses the cmd line values. If bfboard is found
     attempts connecting to a device and returns the Device Manager, Environment
