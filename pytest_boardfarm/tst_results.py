@@ -50,10 +50,9 @@ class Results(dict):
         """Initilises the class instance if not already present, raise and exception otherwise"""
         if Results.__instance is not None:
             raise Exception("Results class is a singleton!")
-        else:
-            Results.__instance = self
-            Results.__location = location
-            Results.__instance.update(session_template)
+        Results.__instance = self
+        Results.__location = location
+        Results.__instance.update(session_template)
 
     def dump_to_file(self):
         """Saves the dictionary (json) to file"""

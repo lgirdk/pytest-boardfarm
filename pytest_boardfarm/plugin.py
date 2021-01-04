@@ -99,10 +99,9 @@ def pytest_addoption(parser):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    if call.when == "setup":
-        if hasattr(item.session, "time_to_boot"):
-            call.start -= item.session.time_to_boot
-            item.session.time_to_boot = 0
+    if call.when == "setup" and hasattr(item.session, "time_to_boot"):
+        call.start -= item.session.time_to_boot
+        item.session.time_to_boot = 0
     yield
     if call.when == "call" and item.cls is None:
         # this is a pytest test (i.e. a function)
@@ -263,7 +262,7 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
         request.cls.env_helper = env_helper
         request.cls.reset_after_fail = True
         request.cls.dont_retry = False
-        request.cls.logged = dict()
+        request.cls.logged = {}
         request.cls.subtests = []
         request.cls.attempts = 0
         # the mother of all hacks

@@ -67,10 +67,8 @@ def check_existing_marker(testsuite, file_name, test):
     )
     output = output.decode("utf-8")
     output_as_list = [string for string in output.split("\n") if output != ""]
-    marked_tcs = []
-    for result in output_as_list:
-        if "::" in result:
-            marked_tcs.append(result.split("::")[1])
+    marked_tcs = [result.split("::")[1] for result in output_as_list if "::" in result]
+
     return bool(test in marked_tcs)
 
 
@@ -131,7 +129,7 @@ for testsuite in testsuites_list:
             if "import pytest" not in filedata:
                 matches = re.findall(r"import .*", filedata)
                 for match in matches:
-                    if ("(" in match and ")" in match) or ("(" not in match):
+                    if ")" in match or "(" not in match:
                         filedata = filedata.replace(match, match + "\nimport pytest", 1)
                         break
 
