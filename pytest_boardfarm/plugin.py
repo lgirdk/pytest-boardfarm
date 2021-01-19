@@ -136,12 +136,19 @@ def pytest_sessionfinish(session, exitstatus):
 
 @pytest.mark.tryfirst
 def pytest_cmdline_main(config):
+    def _exists(needle, haystack):
+        return any(needle in str_ for str_ in haystack)
+
     cmdargs = config.invocation_params.args
-    if "--bfboard" not in cmdargs:
+    if _exists("--bfboard", cmdargs) is False:
         global _ignore_bft
         _ignore_bft = True
 
-    if not _ignore_bft and "--bfconfig_file" in cmdargs and "--bfname" not in cmdargs:
+    if (
+        not _ignore_bft
+        and _exists("--bfconfig_file", cmdargs)
+        and _exists("--bfname", cmdargs) is False
+    ):
         msg = "If overriding the dashboard from cli a board name MUST be given"
         logger.error(colored(msg, "red", attrs=["bold"]))
         pytest.exit(msg=msg, returncode=ExitCode.USAGE_ERROR)
