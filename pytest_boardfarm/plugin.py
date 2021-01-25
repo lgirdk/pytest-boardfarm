@@ -151,7 +151,7 @@ def pytest_runtest_call(item):
 def pytest_sessionfinish(session, exitstatus):
     if hasattr(session, "bft_config"):
         report_pytestrun_to_elk(session)
-    if hasattr(session, "html_report_file"):
+    if getattr(session, "html_report_file", None):
         source = session.html_report_file
         dest = os.path.dirname(source) + "/mail_" + os.path.basename(source)
         trim_pytest_result_for_email(source, dest)
