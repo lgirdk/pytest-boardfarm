@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import time
 
 import pytest
@@ -7,6 +8,7 @@ from _pytest.config import ExitCode
 from boardfarm.bft import logger
 from boardfarm.exceptions import BftEnvMismatch, BftSysExit
 from boardfarm.lib.bft_logging import write_test_log
+from boardfarm.tests import bft_base_test
 from py.xml import html
 from termcolor import colored
 
@@ -14,6 +16,13 @@ from pytest_boardfarm.connections import bf_connect
 from pytest_boardfarm.tst_results import add_test_result, save_station_to_file
 
 _ignore_bft = False
+
+this = sys.modules[__name__]
+
+this.INSTANCE = None
+this.DEVICES = None
+this.ENV_HELPER = None
+this.CONFIG = None
 
 
 def get_result_dir():
@@ -111,6 +120,20 @@ def trim_pytest_result_for_email(filepathin, filepathout):
     # saves the stripped down page
     with open(filepathout, "w") as file:
         file.write(str(soup))
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_setup(item):
+    if (
+        hasattr(item, "cls")
+        and item.cls
+        and issubclass(item.cls, bft_base_test.BftBaseTest)
+    ):
+        bft_base_test.BftBaseTest.dev = this.DEVICES
+        bft_base_test.BftBaseTest.config = this.CONFIG
+        bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
+
+    yield
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -265,11 +288,16 @@ def boardfarm_fixtures_init(request):
                 os.environ["BFT_PYTEST_BOOT_FAILED"] = str(skip_boot)
                 pytest.exit("BFT_PYTEST_BOOT_FAILED")
 
+        this.INSTANCE = request.instance
+        this.DEVICES = device_mgr
+        this.CONFIG = config
+        this.ENV_HELPER = env_helper
+
         yield config, device_mgr, env_helper, bfweb, skip_boot
     else:
         yield
 
-    print("Test session completed")
+    print("\nTest session completed")
 
 
 @pytest.fixture(scope="class", autouse=True)
@@ -278,8 +306,6 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
     Create needed fixtures for boardfarm tests classes.
     """
     if request.cls and not _ignore_bft:
-        from boardfarm.tests import bft_base_test
-
         # Connect to a station (board and devices)
         config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
         request.cls.config = config
@@ -316,21 +342,21 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
 
 
 @pytest.fixture
-def devices(boardfarm_fixtures_init):
+def devices():
     """Fixture that returs the connected devices"""
-    yield boardfarm_fixtures_init[1]
+    yield this.DEVICES
 
 
 @pytest.fixture
-def env_helper(boardfarm_fixtures_init):
+def env_helper():
     """Fixture that returns the Environment Helper"""
-    yield boardfarm_fixtures_init[2]
+    yield this.ENV_HELPER
 
 
 @pytest.fixture
-def config(boardfarm_fixtures_init):
+def config():
     """Fixture that returns the currenet Config"""
-    yield boardfarm_fixtures_init[0]
+    yield this.CONFIG
 
 
 @pytest.fixture(scope="session", autouse=True)
