@@ -11,11 +11,7 @@ from py.xml import html
 from termcolor import colored
 
 from pytest_boardfarm.connections import bf_connect
-from pytest_boardfarm.tst_results import (
-    add_test_result,
-    save_results_to_file,
-    save_station_to_file,
-)
+from pytest_boardfarm.tst_results import add_test_result, save_station_to_file
 
 _ignore_bft = False
 
@@ -126,10 +122,8 @@ def pytest_runtest_makereport(item, call):
     if call.when == "call" and item.cls is None:
         # this is a pytest test (i.e. a function)
         add_test_result(item, call)
-        save_results_to_file()
     if call.when == "teardown" and item.cls:
         add_test_result(item, call)
-        save_results_to_file()
         if (
             hasattr(item, "cls")
             and hasattr(item.cls, "test_obj")
