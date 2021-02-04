@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+from datetime import datetime
 
 import pytest
 from _pytest.config import ExitCode
@@ -154,6 +155,16 @@ def pytest_runtest_makereport(item, call):
             and hasattr(item.cls.test_obj, "result_grade")
         ):
             write_test_log(item.cls.test_obj, get_result_dir())
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_html_results_table_header(cells):
+    cells.insert(0, html.th("Time", class_="sortable time", col="time"))
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_html_results_table_row(report, cells):
+    cells.insert(0, html.td(datetime.utcnow(), class_="col-time"))
 
 
 def pytest_runtest_call(item):
