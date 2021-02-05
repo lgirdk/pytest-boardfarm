@@ -14,6 +14,7 @@ from py.xml import html
 from termcolor import colored
 
 from pytest_boardfarm.connections import bf_connect
+from pytest_boardfarm.pytest_logging import LogWrapper
 from pytest_boardfarm.tst_results import add_test_result, save_station_to_file
 
 _ignore_bft = False
@@ -425,3 +426,9 @@ def report_pytestrun_to_elk(session):
         test_data["test_id"] = "Manual" if "Interact" in id else id
         logger.info(f"Logging Data to ELK: {test_data}")
         session.config.elk.post_to_elasticsearch(test_data)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def bf_logger():
+    """ Returns wrapper around logging library """
+    return LogWrapper()
