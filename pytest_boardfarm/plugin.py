@@ -33,6 +33,14 @@ def get_result_dir():
     return owrt_tests_dir
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "env_req(env_req: Dict): mark test with environment request. Skip test if environment check fails.\n"
+        'Example: @pytest.mark.env_req({"environment_def":{"board":{"eRouter_Provisioning_mode":["dual"]}}})',
+    )
+
+
 def pytest_addoption(parser):
     """Add options to control the boardfarm plugin."""
     group = parser.getgroup(
