@@ -4,6 +4,7 @@ import sys
 import time
 from datetime import datetime
 
+import boardfarm_docsis.lib.booting
 import pytest
 from _pytest.config import ExitCode
 from boardfarm.bft import logger
@@ -17,14 +18,14 @@ from pytest_boardfarm.connections import bf_connect
 from pytest_boardfarm.pytest_logging import LogWrapper
 from pytest_boardfarm.tst_results import add_test_result, save_station_to_file
 
-_ignore_bft = False
-
 this = sys.modules[__name__]
 
-this.INSTANCE = None
 this.DEVICES = None
 this.ENV_HELPER = None
+this.BF_WEB = None
 this.CONFIG = None
+this.SKIPBOOT = None
+this.IGNORE_BFT = False
 
 
 def get_result_dir():
@@ -143,6 +144,49 @@ def pytest_runtest_setup(item):
         bft_base_test.BftBaseTest.config = this.CONFIG
         bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
 
+    env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
+
+    if this.ENV_HELPER:
+        # contingency goes here
+
+        if env_request:
+            try:
+                this.ENV_HELPER.env_check(env_request[0])
+            except BftEnvMismatch:
+                pytest.skip("Environment mismatch. Skipping")
+
+    yield
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtestloop(session):
+    if not this.IGNORE_BFT:
+        try:
+            config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(
+                session.config
+            )
+            this.DEVICES = device_mgr
+            this.CONFIG = config
+            this.ENV_HELPER = env_helper
+            this.BF_WEB = bfweb
+            this.SKIPBOOT = skip_boot
+        except (BftSysExit, SystemExit) as e:
+            os.environ[
+                "BFT_PYTEST_REPORT_BOARDNAME"
+            ] = f"Could not connect to any boards ({repr(e)})"
+            pytest.exit(e)
+        except Exception as e:
+            msg = f"Unhandled exception on connection: {repr(e)}"
+            logger.error(msg)
+            os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = msg
+            pytest.exit(e)
+
+        # save station name to file
+        save_station_to_file(this.DEVICES.board.config.get_station())
+        setup_report_info(
+            config, this.DEVICES, this.ENV_HELPER, this.BF_WEB, this.SKIPBOOT
+        )
+
     yield
 
 
@@ -176,15 +220,6 @@ def pytest_html_results_table_row(report, cells):
     cells.insert(0, html.td(datetime.utcnow(), class_="col-time"))
 
 
-def pytest_runtest_call(item):
-    env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
-    if hasattr(item.session, "env_helper") and env_request:
-        try:
-            item.session.env_helper.env_check(env_request[0])
-        except BftEnvMismatch:
-            pytest.skip("Environment mismatch. Skipping")
-
-
 def pytest_sessionfinish(session, exitstatus):
     if hasattr(session, "bft_config"):
         report_pytestrun_to_elk(session)
@@ -201,19 +236,22 @@ def pytest_cmdline_main(config):
 
     cmdargs = config.invocation_params.args
     if _exists("--bfboard", cmdargs) is False:
-        global _ignore_bft
-        _ignore_bft = True
+        this.IGNORE_BFT = True
 
-    if (
-        not _ignore_bft
-        and _exists("--bfconfig_file", cmdargs)
-        and _exists("--bfname", cmdargs) is False
-    ):
-        msg = "If overriding the dashboard from cli a board name MUST be given"
-        logger.error(colored(msg, "red", attrs=["bold"]))
-        pytest.exit(msg=msg, returncode=ExitCode.USAGE_ERROR)
+    if not this.IGNORE_BFT:
+        config.ARM = config.getoption("--bfarm")
+        config.ATOM = config.getoption("--bfatom")
+        config.COMBINED = config.getoption("--bfcombined")
 
-    if not _ignore_bft and "--capture=tee-sys" not in cmdargs:
+        if (
+            _exists("--bfconfig_file", cmdargs)
+            and _exists("--bfname", cmdargs) is False
+        ):
+            msg = "If overriding the dashboard from cli a board name MUST be given"
+            logger.error(colored(msg, "red", attrs=["bold"]))
+            pytest.exit(msg=msg, returncode=ExitCode.USAGE_ERROR)
+
+    if not this.IGNORE_BFT and "--capture=tee-sys" not in cmdargs:
         msg = "Consider using --capture=tee-sys (logging to screen and file)"
         logger.info(colored(msg, "yellow"))
 
@@ -263,57 +301,30 @@ def boardfarm_fixtures_init(request):
     attempts connecting to a device and returns the Device Manager, Environment
     Config helper, otherwise the fixture has no effect.
     """
-    import boardfarm_docsis.lib.booting
 
-    if not _ignore_bft:
-        try:
-            config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(
-                request.config
-            )
-        except (BftSysExit, SystemExit) as e:
-            os.environ[
-                "BFT_PYTEST_REPORT_BOARDNAME"
-            ] = f"Could not connect to any boards ({repr(e)})"
-            pytest.exit(e)
-        except Exception as e:
-            msg = f"Unhandled exception on connection: {repr(e)}"
-            logger.error(msg)
-            os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = msg
-            pytest.exit(e)
+    if not this.IGNORE_BFT:
 
-        # save station name to file
-        save_station_to_file(device_mgr.board.config.get_station())
-
-        config.ARM = request.config.getoption("--bfarm")
-        config.ATOM = request.config.getoption("--bfatom")
-        config.COMBINED = request.config.getoption("--bfcombined")
-        setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot)
         request.session.time_to_boot = 0
-        request.session.bft_config = config
-        request.session.env_helper = env_helper
+        request.session.bft_config = this.CONFIG
+        request.session.env_helper = this.ENV_HELPER
         request.session.html_report_file = request.config.getoption("--html", "")
-        if not skip_boot:
+        if not this.SKIPBOOT:
             try:
                 t = time.time()
                 boardfarm_docsis.lib.booting.boot(
-                    config=config,
-                    env_helper=env_helper,
-                    devices=device_mgr,
+                    config=this.CONFIG,
+                    env_helper=this.ENV_HELPER,
+                    devices=this.DEVICES,
                     logged=dict(),
                 )
                 request.session.time_to_boot = time.time() - t
             except Exception as e:
                 print(e)
-                save_console_logs(config, device_mgr)
-                os.environ["BFT_PYTEST_BOOT_FAILED"] = str(skip_boot)
+                save_console_logs(this.CONFIG, this.DEVICES)
+                os.environ["BFT_PYTEST_BOOT_FAILED"] = str(this.SKIPBOOT)
                 pytest.exit("BFT_PYTEST_BOOT_FAILED")
 
-        this.INSTANCE = request.instance
-        this.DEVICES = device_mgr
-        this.CONFIG = config
-        this.ENV_HELPER = env_helper
-
-        yield config, device_mgr, env_helper, bfweb, skip_boot
+        yield this.CONFIG, this.DEVICES, this.ENV_HELPER, this.BF_WEB, this.SKIPBOOT
     else:
         yield
 
@@ -325,7 +336,7 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
     """
     Create needed fixtures for boardfarm tests classes.
     """
-    if request.cls and not _ignore_bft:
+    if request.cls and not this.IGNORE_BFT:
         # Connect to a station (board and devices)
         config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
         request.cls.config = config
