@@ -15,6 +15,7 @@ from py.xml import html
 from termcolor import colored
 
 from pytest_boardfarm.connections import bf_connect
+from pytest_boardfarm.hooks import contingency_check
 from pytest_boardfarm.pytest_logging import LogWrapper
 from pytest_boardfarm.tst_results import add_test_result, save_station_to_file
 
@@ -146,14 +147,19 @@ def pytest_runtest_setup(item):
 
     env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
 
+    env_req = {}
     if this.ENV_HELPER:
-        # contingency goes here
-
         if env_request:
+            env_req = env_request[0]
             try:
                 this.ENV_HELPER.env_check(env_request[0])
             except BftEnvMismatch:
                 pytest.skip("Environment mismatch. Skipping")
+        try:
+            contingency_check(env_req, this.DEVICES)
+        except Exception:
+            # assuming stack trace is printed by internal hooks
+            pytest.skip("Contingency check failed!. Skipping")
 
     yield
 
