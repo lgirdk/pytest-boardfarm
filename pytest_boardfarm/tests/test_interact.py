@@ -104,8 +104,12 @@ def test_interact(devices):
         if len(name_list) > 0:
             print(f"  Type a device name to connect: {name_list}")
         print("  x: Exit")
-        key = input("Please select: ")
-
+        while True:
+            try:
+                key = input("Please select: ")
+                break
+            except Exception:
+                logger.error("Received exception on input. Try again.")
         if key in name_list:
             d = get_device_by_name(key)
             d.interact()
