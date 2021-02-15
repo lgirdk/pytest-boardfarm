@@ -27,6 +27,7 @@ this.BF_WEB = None
 this.CONFIG = None
 this.SKIPBOOT = None
 this.IGNORE_BFT = False
+this.BFT_CONNECT = False
 
 
 def get_result_dir():
@@ -165,12 +166,10 @@ def pytest_runtest_setup(item):
 
 
 @pytest.hookimpl(hookwrapper=True)
-def pytest_runtestloop(session):
-    if not this.IGNORE_BFT:
+def pytest_runtest_protocol(item):
+    if not this.IGNORE_BFT and not this.BFT_CONNECT:
         try:
-            config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(
-                session.config
-            )
+            config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(item.config)
             this.DEVICES = device_mgr
             this.CONFIG = config
             this.ENV_HELPER = env_helper
@@ -192,6 +191,8 @@ def pytest_runtestloop(session):
         setup_report_info(
             config, this.DEVICES, this.ENV_HELPER, this.BF_WEB, this.SKIPBOOT
         )
+        # so this does not run again on every loop
+        this.BFT_CONNECT = True
 
     yield
 
