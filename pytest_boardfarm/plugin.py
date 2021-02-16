@@ -79,13 +79,15 @@ def pytest_addoption(parser):
     group.addoption(
         "--bffeature",
         action="append",
-        default=[],
+        default=os.getenv("BFT_FEATURES").split(",")
+        if os.getenv("BFT_FEATURES")
+        else [],
         help="Features required for this test run",
     )
     group.addoption(
         "--bffilter",
         action="append",
-        default=None,
+        default=os.getenv("BFT_FILTERS"),
         help="Regex filter off arbitrary board parameters",
     )
     group.addoption(
