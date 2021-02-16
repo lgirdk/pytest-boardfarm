@@ -194,6 +194,26 @@ def pytest_runtest_protocol(item):
         # so this does not run again on every loop
         this.BFT_CONNECT = True
 
+        item.session.time_to_boot = 0
+        item.session.bft_config = this.CONFIG
+        item.session.env_helper = this.ENV_HELPER
+        item.session.html_report_file = item.config.getoption("--html", "")
+        if not this.SKIPBOOT:
+            try:
+                t = time.time()
+                boardfarm_docsis.lib.booting.boot(
+                    config=this.CONFIG,
+                    env_helper=this.ENV_HELPER,
+                    devices=this.DEVICES,
+                    logged=dict(),
+                )
+                item.session.time_to_boot = time.time() - t
+            except Exception as e:
+                print(e)
+                save_console_logs(this.CONFIG, this.DEVICES)
+                os.environ["BFT_PYTEST_BOOT_FAILED"] = str(this.SKIPBOOT)
+                pytest.exit("BFT_PYTEST_BOOT_FAILED")
+
     yield
 
 
@@ -308,29 +328,7 @@ def boardfarm_fixtures_init(request):
     attempts connecting to a device and returns the Device Manager, Environment
     Config helper, otherwise the fixture has no effect.
     """
-
     if not this.IGNORE_BFT:
-
-        request.session.time_to_boot = 0
-        request.session.bft_config = this.CONFIG
-        request.session.env_helper = this.ENV_HELPER
-        request.session.html_report_file = request.config.getoption("--html", "")
-        if not this.SKIPBOOT:
-            try:
-                t = time.time()
-                boardfarm_docsis.lib.booting.boot(
-                    config=this.CONFIG,
-                    env_helper=this.ENV_HELPER,
-                    devices=this.DEVICES,
-                    logged=dict(),
-                )
-                request.session.time_to_boot = time.time() - t
-            except Exception as e:
-                print(e)
-                save_console_logs(this.CONFIG, this.DEVICES)
-                os.environ["BFT_PYTEST_BOOT_FAILED"] = str(this.SKIPBOOT)
-                pytest.exit("BFT_PYTEST_BOOT_FAILED")
-
         yield this.CONFIG, this.DEVICES, this.ENV_HELPER, this.BF_WEB, this.SKIPBOOT
     else:
         yield
