@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import traceback
 from datetime import datetime
 
 import boardfarm_docsis.lib.booting
@@ -28,6 +29,7 @@ this.CONFIG = None
 this.SKIPBOOT = None
 this.IGNORE_BFT = False
 this.BFT_CONNECT = False
+this.IP = {}
 
 
 def get_result_dir():
@@ -159,9 +161,10 @@ def pytest_runtest_setup(item):
             except BftEnvMismatch:
                 pytest.skip("Environment mismatch. Skipping")
         try:
-            contingency_check(env_req, this.DEVICES)
+            this.IP = contingency_check(env_req, this.DEVICES, this.ENV_HELPER)
         except Exception:
             # assuming stack trace is printed by internal hooks
+            traceback.print_exc()
             pytest.skip("Contingency check failed!. Skipping")
 
     yield
@@ -407,8 +410,14 @@ def env_helper():
 
 @pytest.fixture
 def config():
-    """Fixture that returns the currenet Config"""
+    """Fixture that returns the current Config"""
     yield this.CONFIG
+
+
+@pytest.fixture
+def interface_ip():
+    """Fixture that returns the interface IP's"""
+    yield this.IP
 
 
 def configure_elk(elk_reporter):
