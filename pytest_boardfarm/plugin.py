@@ -169,6 +169,20 @@ def pytest_runtest_setup(item):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item):
+
+    if os.environ.get("BFT_ELASTICSERVER", None) is None:
+        msg = [
+            "\nElasticsearch Server is not Configured",
+            "Configure Elasticsearch Server by executing",
+            "following command in shell\n",
+            '$ export BFT_ELASTICSERVER="http://10.64.38.15:9200"',
+        ]
+
+        raise Exception(colored("\n".join(msg), "red", attrs=["bold"]))
+
+    elk_reporter = item.config.pluginmanager.get_plugin("elk-reporter-runtime")
+    configure_elk(elk_reporter)
+
     if not this.IGNORE_BFT and not this.BFT_CONNECT:
         try:
             config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(item.config)
@@ -397,7 +411,6 @@ def config():
     yield this.CONFIG
 
 
-@pytest.fixture(scope="session", autouse=True)
 def configure_elk(elk_reporter):
     elk_reporter.es_index_name = "boardfarmrun"
     elk_reporter.session_data.update(
@@ -409,13 +422,6 @@ def configure_elk(elk_reporter):
     )
     # set pytest verbose level 2 to stop executing elk-reporter pytest_terminal_summary
     elk_reporter.config.option.verbose = 2
-
-    if os.environ.get("BFT_ELASTICSERVER", None) is None:
-        raise Exception(
-            """Elasticsearch Server is not Configured
-Configure Elasticsearch Server by executing following command in shell
-$ export BFT_ELASTICSERVER="http://10.64.38.15:9200" """
-        )
 
 
 def report_pytestrun_to_elk(session):
