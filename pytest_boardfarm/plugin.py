@@ -222,7 +222,10 @@ def pytest_runtest_makereport(item, call):
     if call.when == "setup" and hasattr(item.session, "time_to_boot"):
         call.start -= item.session.time_to_boot
         item.session.time_to_boot = 0
-    yield
+    outcome = yield
+    report = outcome.get_result()
+    report.test_start_time = call.start
+
     if call.when == "call" and item.cls is None:
         # this is a pytest test (i.e. a function)
         add_test_result(item, call)
@@ -239,12 +242,15 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_html_results_table_header(cells):
-    cells.insert(0, html.th("Time", class_="sortable time", col="time"))
+    cells.insert(0, html.th("Start Time", class_="sortable time", col="time"))
 
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_html_results_table_row(report, cells):
-    cells.insert(0, html.td(datetime.utcnow(), class_="col-time"))
+    test_start_time = datetime.fromtimestamp(report.test_start_time).strftime(
+        "%d-%m-%Y %H:%M:%S:%f"
+    )
+    cells.insert(0, html.td(test_start_time, class_="col-time"))
 
 
 def pytest_sessionfinish(session, exitstatus):
