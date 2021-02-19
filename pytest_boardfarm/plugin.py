@@ -153,7 +153,7 @@ def pytest_runtest_setup(item):
     env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
 
     env_req = {}
-    if this.ENV_HELPER:
+    if this.ENV_HELPER and "interact" not in item.name.lower():
         if env_request:
             env_req = env_request[0]
             try:
