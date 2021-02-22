@@ -6,6 +6,7 @@ import traceback
 from datetime import datetime
 
 import boardfarm_docsis.lib.booting
+import pexpect
 import pytest
 from _pytest.config import ExitCode
 from boardfarm.bft import logger
@@ -37,6 +38,13 @@ def get_result_dir():
     if not os.path.exists(owrt_tests_dir):
         os.makedirs(owrt_tests_dir)
     return owrt_tests_dir
+
+
+def get_debug_info_dir(test_name):
+    debug_info_dir = os.path.join(get_result_dir(), test_name + "_debug_info")
+    if not os.path.exists(debug_info_dir):
+        os.makedirs(debug_info_dir)
+    return debug_info_dir
 
 
 def pytest_configure(config):
@@ -115,6 +123,12 @@ def pytest_addoption(parser):
         action="store",
         default=get_result_dir(),
         help="Directory for the output results files",
+    )
+    group.addoption(
+        "--bfskip_debug_on_fail",
+        action="store_true",
+        default=False,
+        help="Flag to skip debug logs collection on each fail.",
     )
 
 
@@ -242,12 +256,55 @@ def pytest_runtest_makereport(item, call):
         call.start -= item.session.time_to_boot
         item.session.time_to_boot = 0
     outcome = yield
+
     report = outcome.get_result()
     report.test_start_time = call.start
 
     if call.when == "call" and item.cls is None:
         # this is a pytest test (i.e. a function)
         add_test_result(item, call)
+    if (
+        call.when == "call"
+        and report.failed
+        and this.DEVICES  # We are not in unit tests
+        and not this.CONFIG.skip_debug_on_fail  # Skip flag is not set
+    ):
+        # Collect debug info after failed test
+        logger.info(
+            "Detected failed test. Collecting debug info. Add --bfskip_debug_on_fail flag to skip this."
+        )
+        try:
+            # Run bunch of commands in ARM and ATOM consoles and save outputs to file
+            start = time.time()
+            debug_file_name = os.path.join(
+                get_debug_info_dir(item.name), "debug_commands_outputs.txt"
+            )
+            with open(debug_file_name, "w") as debug_log_file:
+                for output in this.DEVICES.board.collect_debug_info():
+                    debug_log_file.write(output)
+
+            # Try to grab all log files from /rdkb/logs/ folder on ARM side
+            # First scp files from ARM to WAN coatainer
+            this.DEVICES.board.copy_debug_logs_to_wan()
+            # Download files from WAN container to the local machine.
+            # Should we move this elsewhere?
+            wan = this.DEVICES.wan
+            command = (
+                f"scp -o StrictHostKeyChecking=no -P {wan.port} "
+                f"{wan.username}@{wan.ipaddr}:/tmp/*log.txt.* {get_debug_info_dir(item.name)}"
+            )
+            logger.debug(f"Downloading files via {command}")
+            cli = pexpect.spawn("/bin/bash", echo=False)
+            cli.sendline(command)
+            cli.expect("assword:")
+            cli.sendline(wan.password)
+            cli.expect(r".*\$ ")
+            logger.info(
+                f"\nDebug info collection took {int(time.time() - start)} "
+                "seconds to finish. Add --bfskip_debug_on_fail flag to skip this."
+            )
+        except Exception as e:
+            logger.error(f"Unable to collect debug info: {str(e)}")
     if call.when == "teardown" and item.cls:
         add_test_result(item, call)
         if (
@@ -448,12 +505,7 @@ def report_pytestrun_to_elk(session):
 
     session.config.elk.es_address = session.bft_config.elasticsearch_server
 
-    keys = [
-        "build_url",
-        "username",
-        "hostname",
-        "session_start_time",
-    ]
+    keys = ["build_url", "username", "hostname", "session_start_time"]
     test_data = {k: session.config.elk.session_data[k] for k in keys}
     test_data["board_id"] = os.environ.get("BFT_PYTEST_REPORT_BOARDNAME", None)
 
