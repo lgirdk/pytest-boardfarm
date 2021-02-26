@@ -31,6 +31,7 @@ this.SKIPBOOT = None
 this.IGNORE_BFT = False
 this.BFT_CONNECT = False
 this.IP = {}
+this.PYTESTCONFIG = None
 
 
 def get_result_dir():
@@ -50,8 +51,10 @@ def get_debug_info_dir(test_name):
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
-        "env_req(env_req: Dict): mark test with environment request. Skip test if environment check fails.\n"
-        'Example: @pytest.mark.env_req({"environment_def":{"board":{"eRouter_Provisioning_mode":["dual"]}}})',
+        "env_req(env_req: Dict): mark test with environment request. Skip"
+        " test if environment check fails.\n"
+        'Example: @pytest.mark.env_req({"environment_def":{"board":'
+        '{"eRouter_Provisioning_mode":["dual"]}}})',
     )
 
 
@@ -125,6 +128,13 @@ def pytest_addoption(parser):
         help="Directory for the output results files",
     )
     group.addoption(
+        "--bfskip_contingency",
+        action="store_true",
+        default=False,
+        help="do not perform ANY env/contingency checks when running tests"
+        " (useful when running from the interact menu)",
+    )
+    group.addoption(
         "--bfskip_debug_on_fail",
         action="store_true",
         default=False,
@@ -155,6 +165,7 @@ def trim_pytest_result_for_email(filepathin, filepathout):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_setup(item):
+    env_request = None
     if (
         hasattr(item, "cls")
         and item.cls
@@ -163,15 +174,20 @@ def pytest_runtest_setup(item):
         bft_base_test.BftBaseTest.dev = this.DEVICES
         bft_base_test.BftBaseTest.config = this.CONFIG
         bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
+        env_request = hasattr(item.cls, "env_req")
+        env_req = item.cls.env_req if env_request else {}
+    else:
+        env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
+        env_req = env_request[0] if env_request else {}
 
-    env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
-
-    env_req = {}
-    if this.ENV_HELPER and "interact" not in item.name.lower():
+    if (
+        this.PYTESTCONFIG.getoption("--bfskip_contingency") is False
+        and this.ENV_HELPER
+        and "interact" not in item.name.lower()
+    ):
         if env_request:
-            env_req = env_request[0]
             try:
-                this.ENV_HELPER.env_check(env_request[0])
+                this.ENV_HELPER.env_check(env_req)
             except BftEnvMismatch:
                 pytest.skip("Environment mismatch. Skipping")
         try:
@@ -363,6 +379,7 @@ def pytest_cmdline_main(config):
     if not this.IGNORE_BFT and "--capture=tee-sys" not in cmdargs:
         msg = "Consider using --capture=tee-sys (logging to screen and file)"
         logger.info(colored(msg, "yellow"))
+    this.PYTESTCONFIG = config
 
 
 def save_console_logs(config, device_mgr):
