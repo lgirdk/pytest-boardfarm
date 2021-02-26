@@ -19,6 +19,11 @@ from termcolor import colored
 logger = logging.getLogger("bft")
 
 
+@pytest.fixture
+def pytestconfig(request):
+    yield request.config
+
+
 def print_dynamic_devices(devices):
     """Print dynamic devices."""
     for device in devices:
@@ -34,8 +39,11 @@ def print_dynamic_devices(devices):
             print(f"  {device.name} device:")
 
 
-def run_pytest_test(test):
+def run_pytest_test(test, skip_contingency):
     cmd_args = ["-s", "--disable-warnings", "-p", "no:randomly"]
+    if skip_contingency:
+        cmd_args.append("--bfskip_contingency")
+
     if os.getenv("BFT_DEBUG", "n").lower() == "y":
         cmd_args.append("-vv")
     if not test:
@@ -56,7 +64,7 @@ def run_pytest_test(test):
     pytest.main(cmd_args)
 
 
-def test_interact(devices):
+def test_interact(devices, pytestconfig):
     board = devices.board
     msg = colored(
         "Interactive console test",
@@ -121,7 +129,7 @@ def test_interact(devices):
             i += 1
 
         if key == str(i):
-            run_pytest_test("")
+            run_pytest_test("", False)
             continue
         i += 1
         if key == str(i):
@@ -149,7 +157,7 @@ def test_interact(devices):
                     logger.info(f"\nRunning legacy bft test {test}\n")
                 else:
                     logger.info(f"\nRunning pytest {test}\n")
-                run_pytest_test(test)
+                run_pytest_test(test, pytestconfig.getoption("--bfskip_contingency"))
             continue
         i += 1
         if key == str(i):
