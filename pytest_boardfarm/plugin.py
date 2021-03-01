@@ -413,6 +413,14 @@ def pytest_html_results_summary(prefix, summary, postfix):
     prefix.extend(
         [html.p(html.b("Prov Mode: "), os.getenv("BFT_PYTEST_REPORT_PROV_MODE"))]
     )
+    prefix.extend(
+        [
+            html.p(
+                html.b("Randomly Seed Value: "),
+                str(this.PYTESTCONFIG.getoption("--randomly-seed")),
+            )
+        ]
+    )
     if os.getenv("BFT_PYTEST_BOOT_FAILED"):
         prefix.extend([html.p(html.b("--==** FAILED ON BOOT **==--"))])
     elif os.getenv("BFT_PYTEST_REPORT_SKIP_BOOT"):
