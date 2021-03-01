@@ -298,7 +298,7 @@ def pytest_runtest_makereport(item, call):
             cli.sendline(command)
             cli.expect("assword:")
             cli.sendline(wan.password)
-            cli.expect(r".*\$ ")
+            cli.expect(r":.*(\$|#)")
             logger.info(
                 f"\nDebug info collection took {int(time.time() - start)} "
                 "seconds to finish. Add --bfskip_debug_on_fail flag to skip this."
