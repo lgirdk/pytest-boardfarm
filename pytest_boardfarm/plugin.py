@@ -403,8 +403,23 @@ def setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot):
     sw = env_helper.get_software()
     os.environ["BFT_PYTEST_REPORT_IMAGE"] = sw.get("image_uri", "")
     os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = device_mgr.board.config.get_station()
-    os.environ["BFT_PYTEST_REPORT_PROV_MODE"] = env_helper.get_prov_mode()
+    if hasattr(env_helper, "get_prov_mode"):
+        os.environ["BFT_PYTEST_REPORT_PROV_MODE"] = env_helper.get_prov_mode()
     os.environ["BFT_PYTEST_REPORT_SKIP_BOOT"] = str(skip_boot)
+
+
+def __get_randomly_seed():
+    seed = None
+    try:
+        seed = this.PYTESTCONFIG.getoption("--randomly-seed")
+    except ValueError:
+        msg = colored(
+            "Failed to get randomly-seed, plugin disabled or not installed",
+            "yellow",
+            attrs=["bold"],
+        )
+        logger.error(msg)
+    return seed
 
 
 def pytest_html_results_summary(prefix, summary, postfix):
@@ -413,14 +428,11 @@ def pytest_html_results_summary(prefix, summary, postfix):
     prefix.extend(
         [html.p(html.b("Prov Mode: "), os.getenv("BFT_PYTEST_REPORT_PROV_MODE"))]
     )
-    prefix.extend(
-        [
-            html.p(
-                html.b("Randomly Seed Value: "),
-                str(this.PYTESTCONFIG.getoption("--randomly-seed")),
-            )
-        ]
-    )
+
+    seed = __get_randomly_seed()
+    if seed:
+        prefix.extend([html.p(html.b("Randomly Seed Value: "), str(seed))])
+
     if os.getenv("BFT_PYTEST_BOOT_FAILED"):
         prefix.extend([html.p(html.b("--==** FAILED ON BOOT **==--"))])
     elif os.getenv("BFT_PYTEST_REPORT_SKIP_BOOT"):
