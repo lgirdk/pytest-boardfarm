@@ -67,13 +67,21 @@ def run_pytest_test(test, skip_contingency):
 def test_interact(devices, pytestconfig):
     board = devices.board
     msg = colored(
-        "Interactive console test",
+        "\nInteractive console test",
         color="green",
         attrs=["bold"],
     )
+    msg1 = colored(
+        "\nPress Ctrl-] to stop interaction and return to menu",
+        color="cyan",
+        attrs=["bold"],
+    )
 
-    lib.common.test_msg(f"{msg}\nPress Ctrl-] to stop interaction and return to menu")
-    board.sendline()
+    lib.common.test_msg(f"{msg}\n{msg1}")
+    try:
+        board.sendline()
+    except AttributeError:
+        board._sendline()
     try:
         board.interact()
     except Exception as error:
@@ -109,7 +117,7 @@ def test_interact(devices, pytestconfig):
         i += 1
         print("  %s: Enter interactive python shell" % i)
         i += 1
-        if len(name_list) > 0:
+        if name_list:
             print(f"  Type a device name to connect: {name_list}")
         print("  x: Exit")
         while True:
