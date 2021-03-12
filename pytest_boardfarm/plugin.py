@@ -22,7 +22,6 @@ from pytest_boardfarm.pytest_logging import LogWrapper
 from pytest_boardfarm.tst_results import add_test_result, save_station_to_file
 
 this = sys.modules[__name__]
-
 this.DEVICES = None
 this.ENV_HELPER = None
 this.BF_WEB = None
@@ -31,6 +30,7 @@ this.SKIPBOOT = None
 this.IGNORE_BFT = False
 this.BFT_CONNECT = False
 this.IP = {}
+this.PYTESTCONFIG = None
 
 
 def get_result_dir():
@@ -50,8 +50,10 @@ def get_debug_info_dir(test_name):
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
-        "env_req(env_req: Dict): mark test with environment request. Skip test if environment check fails.\n"
-        'Example: @pytest.mark.env_req({"environment_def":{"board":{"eRouter_Provisioning_mode":["dual"]}}})',
+        "env_req(env_req: Dict): mark test with environment request. Skip"
+        " test if environment check fails.\n"
+        'Example: @pytest.mark.env_req({"environment_def":{"board":'
+        '{"eRouter_Provisioning_mode":["dual"]}}})',
     )
 
 
@@ -125,6 +127,13 @@ def pytest_addoption(parser):
         help="Directory for the output results files",
     )
     group.addoption(
+        "--bfskip_contingency",
+        action="store_true",
+        default=False,
+        help="do not perform ANY env/contingency checks when running tests"
+        " (useful when running from the interact menu)",
+    )
+    group.addoption(
         "--bfskip_debug_on_fail",
         action="store_true",
         default=False,
@@ -136,7 +145,6 @@ def trim_pytest_result_for_email(filepathin, filepathout):
     from bs4 import BeautifulSoup
 
     soup = BeautifulSoup(open(filepathin), "html.parser")
-
     # remove the log text that can be in the Megabytes
     for div in soup.find_all("div", {"class": "log"}):
         div.decompose()
@@ -147,7 +155,6 @@ def trim_pytest_result_for_email(filepathin, filepathout):
         check = t.find("th", colspan="4")
         if check is not None:
             t.decompose()
-
     # saves the stripped down page
     with open(filepathout, "w") as file:
         file.write(str(soup))
@@ -155,6 +162,8 @@ def trim_pytest_result_for_email(filepathin, filepathout):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_setup(item):
+    env_request = None
+    has_env_marker = [mark.args[0] for mark in item.iter_markers(name="env_req")]
     if (
         hasattr(item, "cls")
         and item.cls
@@ -163,15 +172,17 @@ def pytest_runtest_setup(item):
         bft_base_test.BftBaseTest.dev = this.DEVICES
         bft_base_test.BftBaseTest.config = this.CONFIG
         bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
-
-    env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
-
-    env_req = {}
-    if this.ENV_HELPER and "interact" not in item.name.lower():
+    else:
+        env_req = env_request[0] if env_request else {}
+    if (
+        has_env_marker
+        and this.PYTESTCONFIG.getoption("--bfskip_contingency") is False
+        and this.ENV_HELPER
+        and "interact" not in item.name.lower()
+    ):
         if env_request:
-            env_req = env_request[0]
             try:
-                this.ENV_HELPER.env_check(env_request[0])
+                this.ENV_HELPER.env_check(env_req)
             except BftEnvMismatch:
                 pytest.skip("Environment mismatch. Skipping")
         try:
@@ -180,13 +191,11 @@ def pytest_runtest_setup(item):
             # assuming stack trace is printed by internal hooks
             traceback.print_exc()
             pytest.skip("Contingency check failed!. Skipping")
-
     yield
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item):
-
     if os.environ.get("BFT_ELASTICSERVER", None) is None:
         msg = [
             "\nElasticsearch Server is not Configured",
@@ -194,12 +203,9 @@ def pytest_runtest_protocol(item):
             "following command in shell\n",
             '$ export BFT_ELASTICSERVER="http://10.64.38.15:9200"',
         ]
-
         raise Exception(colored("\n".join(msg), "red", attrs=["bold"]))
-
     elk_reporter = item.config.pluginmanager.get_plugin("elk-reporter-runtime")
     configure_elk(elk_reporter)
-
     if not this.IGNORE_BFT and not this.BFT_CONNECT:
         try:
             config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(item.config)
@@ -218,7 +224,6 @@ def pytest_runtest_protocol(item):
             logger.error(msg)
             os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = msg
             pytest.exit(e)
-
         # save station name to file
         save_station_to_file(this.DEVICES.board.config.get_station())
         setup_report_info(
@@ -226,7 +231,6 @@ def pytest_runtest_protocol(item):
         )
         # so this does not run again on every loop
         this.BFT_CONNECT = True
-
         item.session.time_to_boot = 0
         item.session.bft_config = this.CONFIG
         item.session.env_helper = this.ENV_HELPER
@@ -246,7 +250,6 @@ def pytest_runtest_protocol(item):
                 save_console_logs(this.CONFIG, this.DEVICES)
                 os.environ["BFT_PYTEST_BOOT_FAILED"] = str(this.SKIPBOOT)
                 pytest.exit("BFT_PYTEST_BOOT_FAILED")
-
     yield
 
 
@@ -256,10 +259,8 @@ def pytest_runtest_makereport(item, call):
         call.start -= item.session.time_to_boot
         item.session.time_to_boot = 0
     outcome = yield
-
     report = outcome.get_result()
     report.test_start_time = call.start
-
     if call.when == "call" and item.cls is None:
         # this is a pytest test (i.e. a function)
         add_test_result(item, call)
@@ -282,7 +283,6 @@ def pytest_runtest_makereport(item, call):
             with open(debug_file_name, "w") as debug_log_file:
                 for output in this.DEVICES.board.collect_debug_info():
                     debug_log_file.write(output)
-
             # Try to grab all log files from /rdkb/logs/ folder on ARM side
             # First scp files from ARM to WAN coatainer
             this.DEVICES.board.copy_debug_logs_to_wan()
@@ -298,7 +298,7 @@ def pytest_runtest_makereport(item, call):
             cli.sendline(command)
             cli.expect("assword:")
             cli.sendline(wan.password)
-            cli.expect(r".*\$ ")
+            cli.expect(r":.*(\$|#)")
             logger.info(
                 f"\nDebug info collection took {int(time.time() - start)} "
                 "seconds to finish. Add --bfskip_debug_on_fail flag to skip this."
@@ -346,12 +346,10 @@ def pytest_cmdline_main(config):
     cmdargs = config.invocation_params.args
     if _exists("--bfboard", cmdargs) is False:
         this.IGNORE_BFT = True
-
     if not this.IGNORE_BFT:
         config.ARM = config.getoption("--bfarm")
         config.ATOM = config.getoption("--bfatom")
         config.COMBINED = config.getoption("--bfcombined")
-
         if (
             _exists("--bfconfig_file", cmdargs)
             and _exists("--bfname", cmdargs) is False
@@ -359,10 +357,10 @@ def pytest_cmdline_main(config):
             msg = "If overriding the dashboard from cli a board name MUST be given"
             logger.error(colored(msg, "red", attrs=["bold"]))
             pytest.exit(msg=msg, returncode=ExitCode.USAGE_ERROR)
-
     if not this.IGNORE_BFT and "--capture=tee-sys" not in cmdargs:
         msg = "Consider using --capture=tee-sys (logging to screen and file)"
         logger.info(colored(msg, "yellow"))
+    this.PYTESTCONFIG = config
 
 
 def save_console_logs(config, device_mgr):
@@ -414,7 +412,6 @@ def boardfarm_fixtures_init(request):
         yield this.CONFIG, this.DEVICES, this.ENV_HELPER, this.BF_WEB, this.SKIPBOOT
     else:
         yield
-
     print("\nTest session completed")
 
 
@@ -438,10 +435,8 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
         bft_base_test.BftBaseTest.__init__(
             request.instance, config, device_mgr, env_helper
         )
-
         # End of setup
         yield
-
         try:
             from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
 
@@ -453,7 +448,6 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
                 PreConditionCheck._cache_contingency = -1
         except ImportError:
             pass
-
         save_console_logs(config, device_mgr)
     else:
         yield
@@ -502,13 +496,10 @@ def report_pytestrun_to_elk(session):
     """
     if not session.bft_config.elasticsearch_server:
         return
-
     session.config.elk.es_address = session.bft_config.elasticsearch_server
-
     keys = ["build_url", "username", "hostname", "session_start_time"]
     test_data = {k: session.config.elk.session_data[k] for k in keys}
     test_data["board_id"] = os.environ.get("BFT_PYTEST_REPORT_BOARDNAME", None)
-
     for i, id in enumerate(session.config.elk.session_data["test_ids"]):
         test_data["test_start_time"] = session.config.elk.session_data["test_time"][i][
             0
@@ -521,5 +512,5 @@ def report_pytestrun_to_elk(session):
 
 @pytest.fixture(scope="module", autouse=True)
 def bf_logger():
-    """ Returns wrapper around logging library """
+    """ Return wrapper around logging library """
     return LogWrapper()
