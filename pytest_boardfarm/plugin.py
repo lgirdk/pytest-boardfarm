@@ -166,6 +166,7 @@ def trim_pytest_result_for_email(filepathin, filepathout):
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_setup(item):
     env_request = None
+    has_env_marker = [mark.args[0] for mark in item.iter_markers(name="env_req")]
     if (
         hasattr(item, "cls")
         and item.cls
@@ -174,14 +175,12 @@ def pytest_runtest_setup(item):
         bft_base_test.BftBaseTest.dev = this.DEVICES
         bft_base_test.BftBaseTest.config = this.CONFIG
         bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
-        env_request = hasattr(item.cls, "env_req")
-        env_req = item.cls.env_req if env_request else {}
     else:
-        env_request = [mark.args[0] for mark in item.iter_markers(name="env_req")]
         env_req = env_request[0] if env_request else {}
 
     if (
-        this.PYTESTCONFIG.getoption("--bfskip_contingency") is False
+        has_env_marker
+        and this.PYTESTCONFIG.getoption("--bfskip_contingency") is False
         and this.ENV_HELPER
         and "interact" not in item.name.lower()
     ):
