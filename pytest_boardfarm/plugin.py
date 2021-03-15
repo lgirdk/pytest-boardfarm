@@ -21,6 +21,8 @@ from pytest_boardfarm.hooks import contingency_check
 from pytest_boardfarm.pytest_logging import LogWrapper
 from pytest_boardfarm.tst_results import add_test_result, save_station_to_file
 
+sys.setrecursionlimit(3000)
+
 this = sys.modules[__name__]
 
 this.DEVICES = None
