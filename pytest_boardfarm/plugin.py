@@ -167,7 +167,7 @@ def trim_pytest_result_for_email(filepathin, filepathout):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_setup(item):
-    env_request = None
+
     has_env_marker = [mark.args[0] for mark in item.iter_markers(name="env_req")]
     if (
         hasattr(item, "cls")
@@ -178,7 +178,7 @@ def pytest_runtest_setup(item):
         bft_base_test.BftBaseTest.config = this.CONFIG
         bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
     else:
-        env_req = env_request[0] if env_request else {}
+        env_req = has_env_marker[0] if has_env_marker else {}
 
     if (
         has_env_marker
@@ -186,11 +186,10 @@ def pytest_runtest_setup(item):
         and this.ENV_HELPER
         and "interact" not in item.name.lower()
     ):
-        if env_request:
-            try:
-                this.ENV_HELPER.env_check(env_req)
-            except BftEnvMismatch:
-                pytest.skip("Environment mismatch. Skipping")
+        try:
+            this.ENV_HELPER.env_check(env_req)
+        except BftEnvMismatch:
+            pytest.skip("Environment mismatch. Skipping")
         try:
             this.IP = contingency_check(env_req, this.DEVICES, this.ENV_HELPER)
         except Exception:
