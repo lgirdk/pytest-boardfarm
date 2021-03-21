@@ -177,8 +177,8 @@ def pytest_runtest_setup(item):
         bft_base_test.BftBaseTest.dev = this.DEVICES
         bft_base_test.BftBaseTest.config = this.CONFIG
         bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
-    else:
-        env_req = has_env_marker[0] if has_env_marker else {}
+
+    env_req = has_env_marker[0] if has_env_marker else {}
 
     if (
         has_env_marker
