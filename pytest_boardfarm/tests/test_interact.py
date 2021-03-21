@@ -64,7 +64,7 @@ def run_pytest_test(test, skip_contingency):
     pytest.main(cmd_args)
 
 
-def test_interact(devices, pytestconfig):
+def test_interact(config, env_helper, devices, pytestconfig):
     board = devices.board
     msg = colored(
         "\nInteractive console test",
