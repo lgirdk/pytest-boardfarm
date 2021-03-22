@@ -10,7 +10,11 @@ import pexpect
 import pytest
 from _pytest.config import ExitCode
 from boardfarm.bft import logger
-from boardfarm.exceptions import BftEnvMismatch, BftSysExit
+from boardfarm.exceptions import (
+    BftEnvMismatch,
+    BftSysExit,
+    ContingencyCheckError,
+)
 from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.tests import bft_base_test
 from py.xml import html
@@ -165,9 +169,22 @@ def trim_pytest_result_for_email(filepathin, filepathout):
         file.write(str(soup))
 
 
+def __set_cache_ips():
+    """Transitional helper now that the contingencies are run in the setup
+    fixture. This method will eventually be removed."""
+
+    try:
+        from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
+
+        PreConditionCheck.__cache_ips__ = this.IP
+    except ImportError:
+        pass
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_setup(item):
 
+    env_req = None
     has_env_marker = [mark.args[0] for mark in item.iter_markers(name="env_req")]
     if (
         hasattr(item, "cls")
@@ -177,11 +194,14 @@ def pytest_runtest_setup(item):
         bft_base_test.BftBaseTest.dev = this.DEVICES
         bft_base_test.BftBaseTest.config = this.CONFIG
         bft_base_test.BftBaseTest.env_helper = this.ENV_HELPER
+        if hasattr(item.cls, "env_req"):
+            env_req = item.cls.env_req
 
-    env_req = has_env_marker[0] if has_env_marker else {}
+    if not env_req:
+        env_req = has_env_marker[0] if has_env_marker else {}
 
     if (
-        has_env_marker
+        env_req
         and this.PYTESTCONFIG.getoption("--bfskip_contingency") is False
         and this.ENV_HELPER
         and "interact" not in item.name.lower()
@@ -192,10 +212,11 @@ def pytest_runtest_setup(item):
             pytest.skip("Environment mismatch. Skipping")
         try:
             this.IP = contingency_check(env_req, this.DEVICES, this.ENV_HELPER)
-        except Exception:
+            __set_cache_ips()
+        except Exception as exc:
             # assuming stack trace is printed by internal hooks
             traceback.print_exc()
-            pytest.skip("Contingency check failed!. Skipping")
+            raise ContingencyCheckError(f"CC FAIL: {str(exc)}\nAborting")
 
     yield
 
@@ -339,6 +360,9 @@ def pytest_html_results_table_header(cells):
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_html_results_table_row(report, cells):
+    if "CC FAIL" in report.longreprtext:
+        cells[0] = html.td("CC FAIL", class_="col-result")
+
     test_start_time = datetime.fromtimestamp(report.test_start_time).strftime(
         "%d-%m-%Y %H:%M:%S:%f"
     )
@@ -478,18 +502,6 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
 
         # End of setup
         yield
-
-        try:
-            from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
-
-            if (
-                request.cls.test_obj
-                and hasattr(request.cls.test_obj, "result_grade")
-                and "FAIL" in request.cls.test_obj.result_grade
-            ):
-                PreConditionCheck._cache_contingency = -1
-        except ImportError:
-            pass
 
         save_console_logs(config, device_mgr)
     else:
