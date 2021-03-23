@@ -1,5 +1,7 @@
 import logging
 
+from boardfarm.lib.common import get_pytest_name
+
 
 class LogWrapper:
     def __init__(self):
@@ -7,4 +9,7 @@ class LogWrapper:
 
     def log_step(self, msg):
         """Prints customised logs to console"""
-        self._logger.info("[*****LOGGING-STEP*****]" + "[" + msg + "]")
+        testname = get_pytest_name().split("_(")[0]
+        self._logger.info(
+            "[*****LOGGING-STEP*****]" + "[" + testname + "]" + "[" + msg + "]"
+        )
