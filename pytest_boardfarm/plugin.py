@@ -185,6 +185,10 @@ def __set_cache_ips():
 def pytest_runtest_setup(item):
 
     env_req = None
+    # starttime and stationid properties are added under the properties tag of the result XML
+    # which is then used by the draw_timeline.py
+    item.user_properties.append(("starttime", time.time()))
+    item.user_properties.append(("stationid", os.getenv("BFT_PYTEST_REPORT_BOARDNAME")))
     has_env_marker = [mark.args[0] for mark in item.iter_markers(name="env_req")]
     if (
         hasattr(item, "cls")
