@@ -24,6 +24,12 @@ def pytestconfig(request):
     yield request.config
 
 
+def set_logfile_read(board):
+    for console in board.consoles:
+        if not hasattr(console, "logfile_read") or not console.logfile_read:
+            console.logfile_read = sys.stdout
+
+
 def print_dynamic_devices(devices):
     """Print dynamic devices."""
     for device in devices:
@@ -177,6 +183,7 @@ def test_interact(config, env_helper, devices, pytestconfig):
 
         if key == str(i):
             print("Enter python shell, press Ctrl-D to exit")
+            set_logfile_read(board)
             try:
                 import readline  # optional, will allow Up/Down/History in the console
 
