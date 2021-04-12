@@ -538,6 +538,9 @@ def interface_ip():
 
 def configure_elk(elk_reporter):
     elk_reporter.es_index_name = "boardfarmrun"
+    # this is missing from the elk plugin dicitonary
+    if not elk_reporter.stats.get("xfailed & error", None):
+        elk_reporter.stats.update({"xfailed & error": 0})
     elk_reporter.session_data.update(
         {
             "build_url": os.environ.get("BUILD_URL", None),
