@@ -18,6 +18,7 @@ from boardfarm.exceptions import (
 from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.tests import bft_base_test
 from py.xml import html
+from tabulate import tabulate
 from termcolor import colored
 
 from pytest_boardfarm.connections import bf_connect
@@ -272,6 +273,16 @@ def pytest_runtest_protocol(item):
         item.session.bft_config = this.CONFIG
         item.session.env_helper = this.ENV_HELPER
         item.session.html_report_file = item.config.getoption("--html", "")
+
+        if not this.ENV_HELPER.has_board_sku():
+            warning_message = (
+                "Board SKU/CustomerId is not found in board.SKU or boot_file inside of env.json."
+                "\nCustomerId TLV won't be set in docsis boot file"
+            )
+            logger.warning(
+                colored(tabulate([[warning_message]]), color="red", attrs=["bold"])
+            )
+
         if not this.SKIPBOOT:
             try:
                 t = time.time()
