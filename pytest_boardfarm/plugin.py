@@ -523,19 +523,19 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
         yield
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def devices():
     """Fixture that returs the connected devices"""
     yield this.DEVICES
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def env_helper():
     """Fixture that returns the Environment Helper"""
     yield this.ENV_HELPER
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def config():
     """Fixture that returns the current Config"""
     yield this.CONFIG
@@ -588,5 +588,5 @@ def report_pytestrun_to_elk(session):
 
 @pytest.fixture(scope="module", autouse=True)
 def bf_logger():
-    """ Returns wrapper around logging library """
+    """Returns wrapper around logging library"""
     return LogWrapper()
