@@ -256,6 +256,7 @@ def pytest_runtest_protocol(item):
             ] = f"Could not connect to any boards ({repr(e)})"
             pytest.exit(e)
         except Exception as e:
+            traceback.print_exc()
             msg = f"Unhandled exception on connection: {repr(e)}"
             logger.error(msg)
             os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = msg
