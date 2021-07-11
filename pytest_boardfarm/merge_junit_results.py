@@ -65,11 +65,11 @@ def merge_results(xml_files):
 
     new_root = ET.Element("testsuites")
     new_testsuite = ET.Element("testsuite")
-    new_testsuite.attrib["errors"] = "%s" % errors
-    new_testsuite.attrib["failures"] = "%s" % failures
-    new_testsuite.attrib["skipped"] = "%s" % skipped
-    new_testsuite.attrib["tests"] = "%s" % tests
-    new_testsuite.attrib["time"] = "%s" % time
+    new_testsuite.attrib["errors"] = f"{errors}"
+    new_testsuite.attrib["failures"] = f"{failures}"
+    new_testsuite.attrib["skipped"] = f"{skipped}"
+    new_testsuite.attrib["tests"] = f"{tests}"
+    new_testsuite.attrib["time"] = f"{time}"
     for case in cases:
         new_testsuite.extend(case)
 
@@ -80,7 +80,7 @@ def merge_results(xml_files):
 
 def usage():
     this_file = os.path.basename(__file__)
-    print("Usage:  %s results1.xml results2.xml" % this_file)
+    print(f"Usage:  {this_file} results1.xml results2.xml")
 
 
 if __name__ == "__main__":

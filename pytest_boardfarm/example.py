@@ -18,7 +18,7 @@ class RouterPingWanDev(MyBaseTestClass):
         if not wan:
             msg = "No WAN Device defined, skipping ping WAN test."
             self.skipTest(msg)
-        board.sendline("\nping -c5 %s" % wan.gw)
+        board.sendline(f"\nping -c5 {wan.gw}")
         board.expect("5 (packets )?received", timeout=15)
         board.expect(board.prompt)
 

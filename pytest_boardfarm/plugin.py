@@ -425,9 +425,9 @@ def save_console_logs(config, device_mgr):
     print("----- Save Console Logs -----")
     # Save console logs
     for idx, console in enumerate(device_mgr.board.consoles, start=1):
-        with open(os.path.join(config.output_dir, "console-%s.log" % idx), "w") as clog:
+        with open(os.path.join(config.output_dir, f"console-{idx}.log"), "w") as clog:
             clog.write(console.log)
-    print("There are %s devices" % len(config.devices))
+    print(f"There are {len(config.devices)} devices")
     for device in config.devices:
         with open(os.path.join(config.output_dir, device + ".log"), "w") as clog:
             d = getattr(config, device)

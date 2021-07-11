@@ -98,7 +98,7 @@ def test_interact(config, env_helper, devices, pytestconfig):
 
     while True:
         print("\n\nCurrent station")
-        print("  Board console: %s" % board.config.get("conn_cmd"))
+        print(f"  Board console: {board.config.get('conn_cmd')}")
         print_dynamic_devices(board.dev)
         print(
             "Pro-tip: Increase kernel message verbosity with\n"
@@ -112,16 +112,16 @@ def test_interact(config, env_helper, devices, pytestconfig):
         else:
             i = 1
             for _ in board.consoles:
-                print("  %s: Enter console" % i)
+                print(f"  {i}: Enter console")
                 i += 1
 
-        print("  %s: List all tests" % i)
+        print(f"  {i}: List all tests")
         i += 1
-        print("  %s: Run test" % i)
+        print(f"  {i}: Run test")
         i += 1
-        print("  %s: Reset board" % i)
+        print(f"  {i}: Reset board")
         i += 1
-        print("  %s: Enter interactive python shell" % i)
+        print(f"  {i}: Enter interactive python shell")
         i += 1
         if name_list:
             print(f"  Type a device name to connect: {name_list}")
