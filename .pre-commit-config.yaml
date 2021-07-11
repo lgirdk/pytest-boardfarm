@@ -47,6 +47,12 @@ repos:
             require_serial: true
             language: python
             types: [python]
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v2.21.0
+      hooks:
+          - id: pyupgrade
+            args: [--py36-plus]
+            stages: [commit]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
       rev: 0.1.0
       hooks:

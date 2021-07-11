@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Spyder Editor
 
@@ -62,7 +61,7 @@ def check_existing_marker(testsuite, file_name, test):
         f.close
 
     output = subprocess.check_output(
-        "pytest -m {} --collect-only -q {} || true".format(testsuite, file_name),
+        f"pytest -m {testsuite} --collect-only -q {file_name} || true",
         shell=True,
     )
     output = output.decode("utf-8")
@@ -82,7 +81,7 @@ def validate_result(testsuite):
     pytest_list = []
     for folder in tests_folder:
         output = subprocess.check_output(
-            "pytest -m {} --collect-only -q {}/*.py || true".format(testsuite, folder),
+            f"pytest -m {testsuite} --collect-only -q {folder}/*.py || true",
             shell=True,
         )
         output = output.decode("utf-8")
@@ -106,7 +105,7 @@ def validate_result(testsuite):
             )
         )
     if difference1 == [] and difference2 == []:
-        print("Pytest marker updation successful for testsuite {}".format(testsuite))
+        print(f"Pytest marker updation successful for testsuite {testsuite}")
 
 
 for testsuite in testsuites_list:
@@ -122,7 +121,7 @@ for testsuite in testsuites_list:
 
         # add marker if the testcase is not already marked
         if not existing_marker:
-            with open(file_name, "r") as file:
+            with open(file_name) as file:
                 filedata = file.read()
 
             # add pytest to import section

@@ -109,7 +109,7 @@ def add_test_result(item, call):
         # tests in a class!!!!
         grade = "FAIL" if call.excinfo else "OK"
         # could not get the docstring of the function, dunno why
-        doc = "{}::{}".format(item.location[0], item.location[2])
+        doc = f"{item.location[0]}::{item.location[2]}"
         name = item.name
     else:
         logger.error(
@@ -121,7 +121,7 @@ def add_test_result(item, call):
         )
         grade = "UNKNOWN"
         name = item.name
-        doc = "{}::{}".format(item.location[0], item.location[2])
+        doc = f"{item.location[0]}::{item.location[2]}"
 
     r = result_template.copy()
 
