@@ -203,9 +203,8 @@ def pytest_runtest_setup(item):
 
     if not env_req:
         env_req = has_env_marker[0] if has_env_marker else {}
-
     if (
-        env_req
+        (env_req or item.name == "test_main")
         and this.PYTESTCONFIG.getoption("--bfskip_contingency") is False
         and this.ENV_HELPER
         and "interact" not in item.name.lower()
