@@ -439,8 +439,14 @@ def setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot):
     enhance the test report
     """
     sw = env_helper.get_software()
-    os.environ["BFT_PYTEST_REPORT_IMAGE"] = sw.get("image_uri", "")
-    os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = device_mgr.board.config.get_station()
+    if "image_uri" in sw:
+        image_name = sw.get("image_uri")
+    elif "load_image" in sw:
+        image_name = sw.get("load_image")
+    else:
+        image_name = "Image not specified"
+    os.environ["BFT_PYTEST_REPORT_IMAGE"] = image_name
+    os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = config.board.get_station()
     if hasattr(env_helper, "get_prov_mode"):
         os.environ["BFT_PYTEST_REPORT_PROV_MODE"] = env_helper.get_prov_mode()
     os.environ["BFT_PYTEST_REPORT_SKIP_BOOT"] = str(skip_boot)
