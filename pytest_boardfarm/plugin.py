@@ -1,13 +1,16 @@
 import os
+import re
 import sys
 import time
 import traceback
+import unicodedata
 from datetime import datetime
+from pathlib import Path
 
 import boardfarm_docsis.lib.booting
 import pexpect
 import pytest
-from _pytest.config import ExitCode
+from _pytest.config import Config, ExitCode
 from boardfarm.bft import logger
 from boardfarm.exceptions import (
     BftEnvMismatch,
@@ -391,6 +394,23 @@ def pytest_sessionfinish(session, exitstatus):
         source = session.html_report_file
         dest = os.path.dirname(source) + "/mail_" + os.path.basename(source)
         trim_pytest_result_for_email(source, dest)
+
+
+def pytest_unconfigure(config: Config) -> None:
+    if config.option.xmlpath is None:
+        return
+    xml_path = Path(config.option.xmlpath)
+    if xml_path.exists():
+        raw_xml_path = Path(xml_path.parent, "raw_" + xml_path.name)
+        xml_content = xml_path.read_text()
+        xml_path.rename(raw_xml_path)
+        # Remove escape chars and control chars from report.xml file
+        escape_chars_regex = r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"
+        xml_content = re.sub(escape_chars_regex, "", xml_content)
+        xml_content = "".join(
+            ch for ch in xml_content if unicodedata.category(ch)[0] != "C"
+        )
+        Path(config.option.xmlpath).write_text(xml_content)
 
 
 @pytest.mark.tryfirst
