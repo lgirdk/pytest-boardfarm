@@ -41,5 +41,5 @@ def test_pytest_unconfigure_remove_escape_sequence(mocker):
     config.option.xmlpath = "xmlpath"
     mocker.patch("pytest_boardfarm.plugin.Path", return_value=mocked_path)
     pytest_unconfigure(config)
-    expected_content = "file.zip"
+    expected_content = "file.zip\r\n"
     assert expected_content == mocked_path.written_content
