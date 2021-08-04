@@ -407,7 +407,9 @@ def pytest_unconfigure(config: Config) -> None:
         escape_chars_regex = r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"
         xml_content = re.sub(escape_chars_regex, "", xml_content)
         xml_content = "".join(
-            ch for ch in xml_content if unicodedata.category(ch)[0] != "C"
+            ch
+            for ch in xml_content
+            if ch in "\n\r" or unicodedata.category(ch)[0] != "C"
         )
         Path(config.option.xmlpath).write_text(xml_content)
 
