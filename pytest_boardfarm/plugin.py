@@ -19,7 +19,7 @@ from boardfarm.exceptions import (
 )
 from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.tests import bft_base_test
-from py.xml import html
+from py.xml import html  # pylint: disable=no-name-in-module,import-error
 from tabulate import tabulate
 from termcolor import colored
 
