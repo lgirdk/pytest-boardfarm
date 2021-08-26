@@ -12,11 +12,7 @@ import pexpect
 import pytest
 from _pytest.config import Config, ExitCode
 from boardfarm.bft import logger
-from boardfarm.exceptions import (
-    BftEnvMismatch,
-    BftSysExit,
-    ContingencyCheckError,
-)
+from boardfarm.exceptions import BftEnvMismatch, BftSysExit, ContingencyCheckError
 from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.tests import bft_base_test
 from py.xml import html  # pylint: disable=no-name-in-module,import-error
