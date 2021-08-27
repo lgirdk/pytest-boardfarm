@@ -37,6 +37,10 @@ this.IGNORE_BFT = False
 this.BFT_CONNECT = False
 this.IP = {}
 this.PYTESTCONFIG = None
+this.CUSTOM_EXITCODES = {
+    200: "failed on boot",
+    201: "could not find any board",
+}
 
 
 def get_result_dir():
@@ -251,13 +255,13 @@ def pytest_runtest_protocol(item):
             os.environ[
                 "BFT_PYTEST_REPORT_BOARDNAME"
             ] = f"Could not connect to any boards ({repr(e)})"
-            pytest.exit(e)
+            pytest.exit(msg=this.CUSTOM_EXITCODES[201], returncode=201)
         except Exception as e:
             traceback.print_exc()
             msg = f"Unhandled exception on connection: {repr(e)}"
             logger.error(msg)
             os.environ["BFT_PYTEST_REPORT_BOARDNAME"] = msg
-            pytest.exit(e)
+            pytest.exit(msg=this.CUSTOM_EXITCODES[201], returncode=201)
 
         # save station name to file
         save_station_to_file(this.DEVICES.board.config.get_station())
@@ -292,10 +296,10 @@ def pytest_runtest_protocol(item):
                 )
                 item.session.time_to_boot = time.time() - t
             except Exception as e:
-                print(e)
+                logger.error(colored(e, color="red", attrs=["bold"]))
                 save_console_logs(this.CONFIG, this.DEVICES)
                 os.environ["BFT_PYTEST_BOOT_FAILED"] = str(this.SKIPBOOT)
-                pytest.exit("BFT_PYTEST_BOOT_FAILED")
+                pytest.exit(msg=this.CUSTOM_EXITCODES[200], returncode=200)
 
     yield
 
