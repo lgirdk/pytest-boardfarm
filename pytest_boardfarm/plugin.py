@@ -617,3 +617,18 @@ def report_pytestrun_to_elk(session):
 def bf_logger():
     """Returns wrapper around logging library"""
     return LogWrapper()
+
+
+@pytest.fixture(scope="function")
+def bf_context():
+    """Provide dummy object to store test context."""
+
+    class ContextStorage:
+        """Object to store context.
+        Can be expanded to implement business needs.
+        """
+
+        def __init__(self):
+            pass
+
+    yield ContextStorage()
