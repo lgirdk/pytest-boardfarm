@@ -9,9 +9,7 @@ def bf_connect(config):
     board_type = [
         board_type,
     ]  # convert to list
-    board_names = config.getoption("--bfname")
-    if isinstance(board_names, str):
-        board_names = board_names.split(",", -1)
+    board_name = config.getoption("--bfname")
     station_config_loc = config.getoption("--bfconfig_file")
     if not station_config_loc:
         msg = "No inventory file provided (either use env variable or --bfconfig_file)!!!!"
@@ -19,8 +17,6 @@ def bf_connect(config):
         raise BftSysExit(msg)
     env_config_loc = config.getoption("--bfenv_file")
     skip_boot = config.getoption("--bfskip_boot")
-    features = config.getoption("--bffeature")
-    board_filter = config.getoption("--bffilter")
     skip_debug_on_fail = config.getoption("--bfskip_debug_on_fail")
 
     # Get details about available stations (it returns a location
@@ -29,31 +25,14 @@ def bf_connect(config):
     from_file = not station_config_loc.startswith("http")
     loc, conf = test_configurator.get_station_config(station_config_loc, from_file)
 
-    # Find available stations with compatible boards (DUTs)
-    names = test_configurator.filter_station_config(
-        conf,
-        board_type=board_type,
-        board_names=board_names,
-        board_features=features,
-        board_filter=board_filter,
-    )
-
-    if names:
-        logger.info(
-            colored(f"Boards available are: {names}", color="green", attrs=["bold"])
-        )
-    else:
-        msg = "No boards available!!!!"
-        logger.error(colored(msg, "red"))
-        raise BftSysExit(msg)
-
     # Setup test configuration
     test_config = test_configurator.BoardfarmTestConfig()
-    test_config.BOARD_NAMES = names
     test_config.boardfarm_config_location = loc
     test_config.boardfarm_config = conf
     test_config.test_args_location = env_config_loc
     test_config.skip_debug_on_fail = skip_debug_on_fail
+    test_config.bf_board_name = board_name
+    test_config.bf_board_type = board_type
 
     test_config.ARM = None
     test_config.ATOM = None

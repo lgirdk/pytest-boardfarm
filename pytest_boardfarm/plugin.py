@@ -29,7 +29,6 @@ this = sys.modules[__name__]
 
 this.DEVICES = None
 this.ENV_HELPER = None
-this.BF_WEB = None
 this.CONFIG = None
 this.SKIPBOOT = None
 this.IGNORE_BFT = False
@@ -74,9 +73,8 @@ def pytest_addoption(parser):
     group.addoption("--bfboard", action="store", default="type1", help="board type")
     group.addoption(
         "--bfname",
-        action="store",
-        default=[],
-        help="one or more board names (comma separated)",
+        default=None,
+        help="Lockable resource name",
     )
     group.addoption(
         "--bfconfig_file",
@@ -244,11 +242,12 @@ def pytest_runtest_protocol(item):
 
     if not this.IGNORE_BFT and not this.BFT_CONNECT:
         try:
-            config, device_mgr, env_helper, bfweb, skip_boot = bf_connect(item.config)
+            config, device_mgr, env_helper, lockable_resouces, skip_boot = bf_connect(
+                item.config
+            )
             this.DEVICES = device_mgr
             this.CONFIG = config
             this.ENV_HELPER = env_helper
-            this.BF_WEB = bfweb
             this.SKIPBOOT = skip_boot
         except (BftSysExit, SystemExit) as e:
             os.environ[
@@ -264,9 +263,7 @@ def pytest_runtest_protocol(item):
 
         # save station name to file
         save_station_to_file(this.DEVICES.board.config.get_station())
-        setup_report_info(
-            config, this.DEVICES, this.ENV_HELPER, this.BF_WEB, this.SKIPBOOT
-        )
+        setup_report_info(config, this.DEVICES, this.ENV_HELPER, this.SKIPBOOT)
         # so this does not run again on every loop
         this.BFT_CONNECT = True
 
@@ -295,6 +292,8 @@ def pytest_runtest_protocol(item):
                 )
                 item.session.time_to_boot = time.time() - t
             except Exception as e:
+                message = f"Boot failed: {e}"
+                lockable_resouces.update_message(config.board["resource_name"], message)
                 logger.error(colored(e, color="red", attrs=["bold"]))
                 save_console_logs(this.CONFIG, this.DEVICES)
                 os.environ["BFT_PYTEST_BOOT_FAILED"] = str(this.SKIPBOOT)
@@ -411,11 +410,8 @@ def pytest_cmdline_main(config):
         config.ATOM = config.getoption("--bfatom")
         config.COMBINED = config.getoption("--bfcombined")
 
-        if (
-            _exists("--bfconfig_file", cmdargs)
-            and _exists("--bfname", cmdargs) is False
-        ):
-            msg = "If overriding the dashboard from cli a board name MUST be given"
+        if not _exists("--bfname", cmdargs):
+            msg = "--bfname MUST be passed with a lockable resource name"
             logger.error(colored(msg, "red", attrs=["bold"]))
             pytest.exit(msg=msg, returncode=ExitCode.USAGE_ERROR)
 
@@ -439,7 +435,7 @@ def save_console_logs(config, device_mgr):
                 clog.write(d.log)
 
 
-def setup_report_info(config, device_mgr, env_helper, bfweb, skip_boot):
+def setup_report_info(config, device_mgr, env_helper, skip_boot):
     """Helper function that sets a few env variables that will be used to
     enhance the test report
     """
@@ -497,7 +493,7 @@ def boardfarm_fixtures_init(request):
     Config helper, otherwise the fixture has no effect.
     """
     if not this.IGNORE_BFT:
-        yield this.CONFIG, this.DEVICES, this.ENV_HELPER, this.BF_WEB, this.SKIPBOOT
+        yield this.CONFIG, this.DEVICES, this.ENV_HELPER
     else:
         yield
 
@@ -511,7 +507,7 @@ def boardfarm_fixtures(boardfarm_fixtures_init, request):
     """
     if request.cls and not this.IGNORE_BFT:
         # Connect to a station (board and devices)
-        config, device_mgr, env_helper, bfweb, skip_boot = boardfarm_fixtures_init
+        config, device_mgr, env_helper = boardfarm_fixtures_init
         request.cls.config = config
         request.cls.dev = device_mgr
         request.cls.env_helper = env_helper
