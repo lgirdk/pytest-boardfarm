@@ -8,7 +8,6 @@ from datetime import datetime
 from pathlib import Path
 
 import boardfarm_docsis.lib.booting
-import pexpect
 import pytest
 from _pytest.config import Config, ExitCode
 from boardfarm.bft import logger
@@ -325,34 +324,18 @@ def pytest_runtest_makereport(item, call):
     ):
         # Collect debug info after failed test
         logger.info(
-            "Detected failed test. Collecting debug info. Add --bfskip_debug_on_fail flag to skip this."
+            "\nDetected failed test. Collecting debug info. "
+            "\nAdd --bfskip_debug_on_fail flag to skip this."
         )
         try:
-            # Run bunch of commands in ARM and ATOM consoles and save outputs to file
             start = time.time()
             debug_file_name = os.path.join(
-                get_debug_info_dir(item.name), "debug_commands_outputs.txt"
+                get_debug_info_dir(item.name), "debug_logs.txt"
             )
             with open(debug_file_name, "w") as debug_log_file:
                 for output in this.DEVICES.board.collect_debug_info():
                     debug_log_file.write(output)
 
-            # Try to grab all log files from /rdkb/logs/ folder on ARM side
-            # First scp files from ARM to WAN coatainer
-            this.DEVICES.board.copy_debug_logs_to_wan()
-            # Download files from WAN container to the local machine.
-            # Should we move this elsewhere?
-            wan = this.DEVICES.wan
-            command = (
-                f"scp -o StrictHostKeyChecking=no -P {wan.port} "
-                f"{wan.username}@{wan.ipaddr}:/tmp/*log.txt.* {get_debug_info_dir(item.name)}"
-            )
-            logger.debug(f"Downloading files via {command}")
-            cli = pexpect.spawn("/bin/bash", echo=False)
-            cli.sendline(command)
-            cli.expect("assword:")
-            cli.sendline(wan.password)
-            cli.expect(r":.*(\$|#)")
             logger.info(
                 f"\nDebug info collection took {int(time.time() - start)} "
                 "seconds to finish. Add --bfskip_debug_on_fail flag to skip this."
