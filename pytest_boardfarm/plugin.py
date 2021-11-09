@@ -146,6 +146,12 @@ def pytest_addoption(parser):
         default=False,
         help="Flag to skip debug logs collection on each fail.",
     )
+    group.addoption(
+        "--bfskip_reservation_check",
+        action="store_true",
+        default=False,
+        help="Do not check the resource reservation status on Jenkins",
+    )
 
 
 def trim_pytest_result_for_email(filepathin, filepathout):
@@ -293,7 +299,10 @@ def pytest_runtest_protocol(item):
                 item.session.time_to_boot = time.time() - t
             except Exception as e:
                 message = f"Boot failed: {e}"
-                lockable_resouces.update_message(config.board["resource_name"], message)
+                if lockable_resouces is not None:
+                    lockable_resouces.update_message(
+                        config.board["resource_name"], message
+                    )
                 logger.error(colored(e, color="red", attrs=["bold"]))
                 save_console_logs(this.CONFIG, this.DEVICES)
                 os.environ["BFT_PYTEST_BOOT_FAILED"] = str(this.SKIPBOOT)

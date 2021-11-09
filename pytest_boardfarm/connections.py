@@ -18,6 +18,7 @@ def bf_connect(config):
     env_config_loc = config.getoption("--bfenv_file")
     skip_boot = config.getoption("--bfskip_boot")
     skip_debug_on_fail = config.getoption("--bfskip_debug_on_fail")
+    skip_reservation_check = config.getoption("--bfskip_reservation_check")
 
     # Get details about available stations (it returns a location
     # in case of redirects)
@@ -33,6 +34,7 @@ def bf_connect(config):
     test_config.skip_debug_on_fail = skip_debug_on_fail
     test_config.bf_board_name = board_name
     test_config.bf_board_type = board_type
+    test_config.bf_skip_reservation_check = skip_reservation_check
 
     test_config.ARM = None
     test_config.ATOM = None
