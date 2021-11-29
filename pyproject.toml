@@ -24,8 +24,9 @@
     requires-python = ">=3.6"
 
     dependencies = [
-        "pytest>6",
-        "pluggy==0.13.1",
+        "boardfarm",
+        "boardfarm_docsis",
+        "pytest<7",
         "pytest-cov",
         "pytest-elk-reporter",
         "pytest-html",

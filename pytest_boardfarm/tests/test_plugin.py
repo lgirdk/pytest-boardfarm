@@ -10,7 +10,7 @@ class _PathStub:
         self.content = content
         self.written_content = None
 
-    def exists(true):
+    def exists(self):
         return True
 
     def read_text(self):
