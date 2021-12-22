@@ -1,3 +1,9 @@
+## 2021.51.0 (2021-12-22)
+
+### Feat
+
+- **pylint**: Add pylint to pre-commit. Fix pylint issues.
+
 ## 2021.49.0 (2021-12-09)
 
 ## 2021.47.0 (2021-11-24)
