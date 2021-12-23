@@ -364,6 +364,12 @@ def pytest_runtest_makereport(item, call):
 @pytest.hookimpl(optionalhook=True)
 def pytest_html_results_table_header(cells):
     cells.insert(0, html.th("Start Time", class_="sortable time", col="time"))
+    cells.insert(
+        1,
+        html.th(
+            "Hidden Time", class_="sortable time", col="time", style="display: none;"
+        ),
+    )
 
 
 @pytest.hookimpl(optionalhook=True)
@@ -371,10 +377,11 @@ def pytest_html_results_table_row(report, cells):
     if "CC FAIL" in report.longreprtext:
         cells[0] = html.td("CC FAIL", class_="col-result")
 
-    test_start_time = datetime.fromtimestamp(report.test_start_time).strftime(
-        "%d-%m-%Y %H:%M:%S:%f"
-    )
-    cells.insert(0, html.td(test_start_time, class_="col-time"))
+    start_time = datetime.fromtimestamp(report.test_start_time)
+    epoch_time = start_time.strftime("%s %f")
+    start_time_test = start_time.strftime("%d-%m-%Y %H:%M:%S:%f")
+    cells.insert(0, html.td(epoch_time, class_="col-epoch", style="display: none;"))
+    cells.insert(1, html.td(start_time_test, class_="col-time"))
 
 
 def pytest_sessionfinish(session, exitstatus):
