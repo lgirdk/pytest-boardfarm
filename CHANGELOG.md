@@ -1,3 +1,9 @@
+## 2022.01.0 (2022-01-05)
+
+### Fix
+
+- **plugin.py**: add epoch time to sort and hide it
+
 ## 2021.51.0 (2021-12-22)
 
 ### Feat
