@@ -1,4 +1,4 @@
-"""Integratate boardfarm as a pytest plugin"""
+"""Integrate boardfarm as a pytest plugin."""
 
 __version__ = "2022.11.0"
 

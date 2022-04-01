@@ -1,15 +1,26 @@
-import logging
+"""Log wrapper module."""
 
-from boardfarm.lib.common import get_pytest_name
+import logging
+import os
 
 
 class LogWrapper:
-    def __init__(self):
-        self._logger = logging.getLogger("tests_logger")
+    """Log wrapper to log test steps from tests."""
 
-    def log_step(self, msg):
-        """Prints customised logs to console"""
-        testname = get_pytest_name().split("_(")[0]
-        self._logger.info(
-            "[*****LOGGING-STEP*****]" + "[" + testname + "]" + "[" + msg + "]"
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self) -> None:
+        """Initialize log wrapper."""
+        self._logger = logging.getLogger("test-logger")
+
+    def log_step(self, message: str) -> None:
+        """Log test step.
+
+        :param message: Log message
+        """
+        testname = (
+            (os.environ.get("PYTEST_CURRENT_TEST").split(" (setup)")[0])
+            .split("::")[1]
+            .replace(" ", "_")
         )
+        self._logger.info("[*****LOGGING-STEP*****][%s][%s]", testname, message)
