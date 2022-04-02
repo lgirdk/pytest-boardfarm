@@ -7,6 +7,7 @@ import unicodedata
 from datetime import datetime
 from pathlib import Path
 
+import boardfarm
 import boardfarm_docsis.lib.booting
 import pytest
 from _pytest.config import Config, ExitCode
@@ -226,7 +227,13 @@ def pytest_runtest_setup(item):
             # assuming stack trace is printed by internal hooks
             traceback.print_exc()
             raise ContingencyCheckError(f"CC FAIL: {str(exc)}\nAborting")
-
+    elif (
+        not this.IP
+        and this.PYTESTCONFIG.getoption("--bfskip_contingency")
+        and "interact" not in item.name.lower()
+    ):
+        this.IP["board"] = this.DEVICES.board.get_ifaces_ip_dict()
+        __set_cache_ips()
     yield
 
 
@@ -290,7 +297,16 @@ def pytest_runtest_protocol(item):
         if not this.SKIPBOOT:
             try:
                 t = time.time()
-                boardfarm_docsis.lib.booting.boot(
+                boot = None
+                if isinstance(
+                    this.DEVICES.board.hw,
+                    boardfarm_docsis.devices.base_devices.board.DocsisCPEHw,
+                ):
+                    boot = boardfarm_docsis.lib.booting.boot
+                else:
+                    boot = boardfarm.lib.booting.boot
+
+                boot(
                     config=this.CONFIG,
                     env_helper=this.ENV_HELPER,
                     devices=this.DEVICES,
@@ -389,7 +405,7 @@ def pytest_sessionfinish(session, exitstatus):
         report_pytestrun_to_elk(session)
     if getattr(session, "html_report_file", None):
         source = session.html_report_file
-        dest = os.path.dirname(source) + "/mail_" + os.path.basename(source)
+        dest = f"{session.config.option.bfoutput_dir}mail_{os.path.basename(source)}"
         trim_pytest_result_for_email(source, dest)
 
 
@@ -398,7 +414,7 @@ def pytest_unconfigure(config: Config) -> None:
         return
     xml_path = Path(config.option.xmlpath)
     if xml_path.exists():
-        raw_xml_path = Path(xml_path.parent, "raw_" + xml_path.name)
+        raw_xml_path = Path(xml_path.parent, f"raw_{xml_path.name}")
         xml_content = xml_path.read_text()
         xml_path.rename(raw_xml_path)
         # Remove escape chars and control chars from report.xml file
@@ -440,7 +456,7 @@ def pytest_cmdline_main(config):
 def save_console_logs(config, device_mgr):
     print("----- Save Console Logs -----")
     # Save console logs
-    for idx, console in enumerate(device_mgr.board.consoles, start=1):
+    for idx, console in enumerate(device_mgr.board.hw.consoles, start=1):
         with open(os.path.join(config.output_dir, f"console-{idx}.log"), "w") as clog:
             clog.write(console.log)
     print(f"There are {len(config.devices)} devices")

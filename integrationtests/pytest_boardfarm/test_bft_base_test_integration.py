@@ -13,10 +13,13 @@ class myBftBaseTest(bft_base_test.BftBaseTest):
 
     def __init__(self, *args, **kwargs):
         self.result_grade = ""
+        self._hw = type("hw", (object,), {"consoles": []})()
         self.td_step = type("tstclass", (object,), {"td_final_result": None})()
         self.config = type("tstclass1", (object,), {"devices": [], "retry": 0})()
         board = type(
-            "tstclass2", (object,), {"consoles": [], "touch": myBftBaseTest.ok}
+            "tstclass2",
+            (object,),
+            {"hw": self._hw, "consoles": [], "touch": myBftBaseTest.ok},
         )()
         self.dev = type("tstclass3", (object,), {"board": None})()
         self.dev.board = board
