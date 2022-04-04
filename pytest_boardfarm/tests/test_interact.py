@@ -25,7 +25,7 @@ def pytestconfig(request):
 
 
 def set_logfile_read(board):
-    for console in board.consoles:
+    for console in board.hw.consoles:
         if not hasattr(console, "logfile_read") or not console.logfile_read:
             console.logfile_read = sys.stdout
 
@@ -84,7 +84,7 @@ def test_interact(config, env_helper, devices, pytestconfig):
 
     lib.common.test_msg(f"{msg}\n{msg1}")
     try:
-        board.sendline()
+        board.hw.consoles[0].sendline()
     except AttributeError:
         board._sendline()
     try:
@@ -105,12 +105,12 @@ def test_interact(config, env_helper, devices, pytestconfig):
         )
         print("Menu")
         i = 2
-        if board.consoles is None:
+        if board.hw.consoles is None:
             print("  1: Enter console")
             i += 1
         else:
             i = 1
-            for _ in board.consoles:
+            for _ in board.hw.consoles:
                 print(f"  {i}: Enter console")
                 i += 1
 
@@ -136,7 +136,7 @@ def test_interact(config, env_helper, devices, pytestconfig):
             d.interact()
 
         i = 1
-        for c in board.consoles:
+        for c in board.hw.consoles:
             if key == str(i):
                 c.interact()
             i += 1
