@@ -16,5 +16,6 @@ def contingency_check(env_req, dev_mgr, env_helper):
     ip = {}
     if result:
         for item in result:
-            ip.update(item[-1])
+            if item:
+                ip.update(item[-1])
     return ip
