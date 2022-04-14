@@ -1,3 +1,18 @@
+## 2022.15.0 (2022-04-14)
+
+### Fix
+
+- **pre-commit**: update pre-commit hooks to latest versions and autofix issues
+
+### Feat
+
+- interact consoles accessed via hw
+- allows for non-docsis boot
+
+### BREAKING CHANGE
+
+- BOARDFARM-1666
+
 ## 2022.13.0 (2022-03-31)
 
 ### Fix
