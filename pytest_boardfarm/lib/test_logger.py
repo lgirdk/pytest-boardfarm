@@ -4,7 +4,7 @@ import logging
 import os
 
 
-class LogWrapper:
+class TestLogger:
     """Log wrapper to log test steps from tests."""
 
     # pylint: disable=too-few-public-methods

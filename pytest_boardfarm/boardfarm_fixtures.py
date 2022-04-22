@@ -7,29 +7,29 @@ from pytest import fixture
 
 from pytest_boardfarm.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
 from pytest_boardfarm.exceptions import BoardfarmPluginError
-from pytest_boardfarm.pytest_logging import LogWrapper
+from pytest_boardfarm.lib.test_logger import TestLogger
 
 
-class _ContextStorage:  # pylint: disable=too-few-public-methods
+class ContextStorage:  # pylint: disable=too-few-public-methods
     """Context storage class to store test context data."""
 
 
 @fixture(scope="function")
-def bf_context() -> _ContextStorage:
+def bf_context() -> ContextStorage:
     """Fixture that return context storage instance.
 
     :return: context storage instance
     """
-    return _ContextStorage()
+    return ContextStorage()
 
 
 @fixture(scope="session", autouse=True)
-def bf_logger() -> LogWrapper:
+def bf_logger() -> TestLogger:
     """Fixture that return test step log wrapper instance.
 
     :return: log wrapper instance
     """
-    return LogWrapper()
+    return TestLogger()
 
 
 def get_boardfarm_plugin(pytestconfig: Config) -> BoardfarmPlugin:
