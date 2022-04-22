@@ -24,13 +24,15 @@ class _PathStub:
 
 
 def test_pytest_unconfigure_remove_control_chars(mocker):
-    xml_content = r"sample text"
+    xml_content = r"sample text"  # pylint: disable=invalid-character-esc
     mocked_path = _PathStub("xmlpath", xml_content)
     config = MagicMock(autospec=True)
     config.option.xmlpath = "xmlpath"
     mocker.patch("pytest_boardfarm.plugin.Path", return_value=mocked_path)
     pytest_unconfigure(config)
-    assert "" not in mocked_path.written_content
+    assert (
+        "" not in mocked_path.written_content  # pylint: disable=invalid-character-esc
+    )
     assert "sample text" == mocked_path.written_content
 
 
