@@ -1,3 +1,13 @@
+## 2022.17.0 (2022-04-28)
+
+### Refactor
+
+- **pylint-fixes**: fix errors highlighted by pylint
+
+### Fix
+
+- **pytest_boardfarm:hooks.py**: fix pytest contingency hook
+
 ## 2022.15.0 (2022-04-14)
 
 ### Fix
