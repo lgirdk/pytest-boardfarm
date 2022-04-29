@@ -294,6 +294,26 @@ def pytest_runtest_protocol(item):
                 colored(tabulate([[warning_message]]), color="red", attrs=["bold"])
             )
 
+        items = item.session.items
+        for i in items:
+            item_env_req = [
+                mark.args[0] for mark in i.iter_markers(name="env_req")
+            ] or [{}]
+            try:
+                this.ENV_HELPER.env_check(item_env_req[0])
+                break
+            except BftEnvMismatch:
+                continue
+        else:
+            this.SKIPBOOT = True
+            logger.warning(
+                colored(
+                    "Skipping BOOT as no test matches the env requirement",
+                    color="red",
+                    attrs=["bold"],
+                )
+            )
+
         if not this.SKIPBOOT:
             try:
                 t = time.time()
