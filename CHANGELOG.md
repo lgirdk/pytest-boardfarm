@@ -1,3 +1,9 @@
+## 2022.19.0 (2022-05-11)
+
+### Feat
+
+- **pytest_boardfarm:plugin.py**: add support to skip boot if all the tests in a run are skipped
+
 ## 2022.17.0 (2022-04-28)
 
 ### Refactor
