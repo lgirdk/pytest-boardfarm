@@ -46,10 +46,8 @@
         ]
         doc = ["sphinx"]
         test = [
-            "pytest",
             "pytest-cov",
             "pytest-mock",
-            "pytest-randomly",
         ]
 
     [project.urls]
