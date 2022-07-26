@@ -181,7 +181,7 @@ def __set_cache_ips():
     fixture. This method will eventually be removed."""
 
     try:
-        from boardfarm_lgi.lib.lgi_test_lib import PreConditionCheck
+        from boardfarm_lgi_shared.lib.lgi_test_lib import PreConditionCheck
 
         PreConditionCheck.__cache_ips__ = this.IP
     except ImportError:
