@@ -140,7 +140,7 @@ def add_test_result(item, call):
             )
         )
 
-    r["elapsed_time"] = end_time - end_time
+    r["elapsed_time"] = end_time - start_time
     r["grade"] = grade
     r["message"] = doc
     r["name"] = name
