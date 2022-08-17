@@ -1,3 +1,9 @@
+## 2022.33.0 (2022-08-17)
+
+### Fix
+
+- **tst_results.py**: correct the identical sub expressions
+
 ## 2022.31.0 (2022-08-03)
 
 ### Refactor
@@ -22,28 +28,28 @@
 
 ## 2022.17.0 (2022-04-28)
 
-### Refactor
-
-- **pylint-fixes**: fix errors highlighted by pylint
-
 ### Fix
 
 - **pytest_boardfarm:hooks.py**: fix pytest contingency hook
 
+### Refactor
+
+- **pylint-fixes**: fix errors highlighted by pylint
+
 ## 2022.15.0 (2022-04-14)
 
-### Fix
+### BREAKING CHANGE
 
-- **pre-commit**: update pre-commit hooks to latest versions and autofix issues
+- BOARDFARM-1666
 
 ### Feat
 
 - interact consoles accessed via hw
 - allows for non-docsis boot
 
-### BREAKING CHANGE
+### Fix
 
-- BOARDFARM-1666
+- **pre-commit**: update pre-commit hooks to latest versions and autofix issues
 
 ## 2022.13.0 (2022-03-31)
 
