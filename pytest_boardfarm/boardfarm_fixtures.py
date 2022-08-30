@@ -7,8 +7,8 @@ from _pytest.config import Config
 from boardfarm.lib.boardfarm_config import BoardfarmConfig
 from boardfarm.lib.device_manager import DeviceManager
 from boardfarm.templates.lan import LAN
-from boardfarm_docsis.templates.cable_modem import CableModem
 from boardfarm_lgi_shared.lib.gui.gui_helper import get_web_driver
+from boardfarm_lgi_shared.templates.cable_modem import CableModem
 from pytest import fixture
 
 from pytest_boardfarm.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
