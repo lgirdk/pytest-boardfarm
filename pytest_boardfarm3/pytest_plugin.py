@@ -5,8 +5,8 @@ from typing import List
 
 from _pytest.config import Config
 
-from pytest_boardfarm import boardfarm_fixtures
-from pytest_boardfarm.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
+from pytest_boardfarm3 import boardfarm_fixtures
+from pytest_boardfarm3.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
 
 sys.setrecursionlimit(3000)
 

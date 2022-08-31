@@ -1,6 +1,6 @@
 """pytest boardfarm exception."""
 
-from boardfarm.exceptions import BoardfarmException
+from boardfarm3.exceptions import BoardfarmException
 
 
 class BoardfarmPluginError(BoardfarmException):

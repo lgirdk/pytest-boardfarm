@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from _pytest.config import Config
-from boardfarm.devices.base_devices import BoardfarmDevice
-from boardfarm.lib.boardfarm_config import BoardfarmConfig
-from boardfarm.lib.device_manager import DeviceManager
+from boardfarm3.devices.base_devices import BoardfarmDevice
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+from boardfarm3.lib.device_manager import DeviceManager
 from py.xml import Tag, html  # pylint: disable=no-name-in-module,import-error
 
 _TD_CSS_STYLE = "border: 1px solid #E6E6E6; padding: 3px;"

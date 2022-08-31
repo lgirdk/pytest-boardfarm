@@ -3,13 +3,13 @@
 import logging
 
 from _pytest.config import Config
-from boardfarm.lib.boardfarm_config import BoardfarmConfig
-from boardfarm.lib.device_manager import DeviceManager
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+from boardfarm3.lib.device_manager import DeviceManager
 from pytest import fixture
 
-from pytest_boardfarm.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
-from pytest_boardfarm.exceptions import BoardfarmPluginError
-from pytest_boardfarm.lib.test_logger import TestLogger
+from pytest_boardfarm3.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
+from pytest_boardfarm3.exceptions import BoardfarmPluginError
+from pytest_boardfarm3.lib.test_logger import TestLogger
 
 _LOGGER = logging.getLogger(__name__)
 

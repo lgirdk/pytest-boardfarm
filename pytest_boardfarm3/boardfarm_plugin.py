@@ -9,14 +9,14 @@ from _pytest.logging import LoggingPlugin
 from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
-from boardfarm.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
-from boardfarm.lib.device_manager import DeviceManager
-from boardfarm.main import get_plugin_manager
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
+from boardfarm3.lib.device_manager import DeviceManager
+from boardfarm3.main import get_plugin_manager
 from py.xml import html  # pylint: disable=no-name-in-module,import-error
 
-from pytest_boardfarm.lib.argument_parser import ArgumentParser
-from pytest_boardfarm.lib.html_report import get_boardfarm_html_table_report
-from pytest_boardfarm.lib.utils import capture_boardfarm_logs, is_env_matching
+from pytest_boardfarm3.lib.argument_parser import ArgumentParser
+from pytest_boardfarm3.lib.html_report import get_boardfarm_html_table_report
+from pytest_boardfarm3.lib.utils import capture_boardfarm_logs, is_env_matching
 
 BOARDFARM_PLUGIN_NAME = "_boardfarm"
 
