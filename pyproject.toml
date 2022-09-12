@@ -34,6 +34,7 @@
     [project.optional-dependencies]
         dev = [
             "black",
+            "darglint",
             "flake8",
             "flake8-bugbear",
             "flake8-docstrings",
@@ -54,7 +55,7 @@
         Source = "https://github.com/lgirdk/pytest-boardfarm"
 
     [project.entry-points."pytest11"]
-        pytest_boardfarm = "pytest_boardfarm.pytest_plugin"
+        pytest_boardfarm = "pytest_boardfarm3.pytest_plugin"
 
 [tool.commitizen]
     bump_message = "Bump version to $new_version"
