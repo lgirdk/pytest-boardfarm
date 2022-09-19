@@ -29,14 +29,10 @@
         "pytest<7,>=6",
         "pytest-cov",          # TODO: am I really needed?
         "pytest-elk-reporter", # TODO: am I really needed?
-        "pytest-html",         # FIXME: I should be a suite requirement
         "pytest-instafail",    # TODO: am I really needed?
         "pytest-json",         # TODO: am I really needed?
-        "pytest-mock",         # FIXME: I should be a suite requirement
         "pytest-order",        # TODO: am I really needed?
         "pytest-picked",       # TODO: am I not needed by the pipelines?
-        "pytest-randomly",     # FIXME: I should be a suite requirement
-        "pytest-xdist",        # FIXME: I should be a suite requirement
     ]
 
     [project.optional-dependencies]
