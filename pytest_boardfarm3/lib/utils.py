@@ -1,6 +1,6 @@
 """Pytest boardfarm utils."""
 import sys
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 from _pytest.logging import LoggingPlugin, _remove_ansi_escape_sequences, catching_logs
 
@@ -65,7 +65,7 @@ def is_env_matching(test_env_request: Any, boardfarm_env: Any) -> bool:
 
 
 def capture_boardfarm_logs(
-    logging_plugin: LoggingPlugin, function: Callable, capture_to: Dict
+    logging_plugin: LoggingPlugin, function: Callable, capture_to: dict
 ) -> None:
     """Capture boardfarm logs on given function execution.
 

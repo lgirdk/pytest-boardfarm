@@ -1,6 +1,6 @@
 """pytest boardfarm plugin module."""
+from collections.abc import Generator
 from datetime import datetime
-from typing import Dict, Generator, List
 
 import pytest
 from _pytest.config import Config
@@ -30,8 +30,8 @@ class BoardfarmPlugin:
         """Initialize boardfarm plugin."""
         self._session_config: Config = None
         self._test_start_time: datetime = None
-        self._deployment_setup_data: Dict = {}
-        self._deployment_teardown_data: Dict = {}
+        self._deployment_setup_data: dict = {}
+        self._deployment_teardown_data: dict = {}
         self._plugin_manager = get_plugin_manager()
         self.device_manager: DeviceManager = None
         self.boardfarm_config: BoardfarmConfig = None
@@ -150,7 +150,7 @@ class BoardfarmPlugin:
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_table_header(cells: List) -> None:
+    def pytest_html_results_table_header(cells: list) -> None:
         """Add test start time custom header in html report.
 
         :param cells: html table header list
@@ -168,7 +168,7 @@ class BoardfarmPlugin:
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_table_row(report: TestReport, cells: List) -> None:
+    def pytest_html_results_table_row(report: TestReport, cells: list) -> None:
         """Add test test start time in the html report.
 
         :param report: test execution report
@@ -180,7 +180,7 @@ class BoardfarmPlugin:
         cells.insert(1, html.td(start_time_test, class_="col-time"))
 
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_summary(self, postfix: List) -> None:
+    def pytest_html_results_summary(self, postfix: list) -> None:
         """Update the html report with boardfarm deployment and environment details.
 
         :param postfix: html report postfix content list

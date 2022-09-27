@@ -1,7 +1,6 @@
 """pytest plugin for boardfarm."""
 
 import sys
-from typing import List
 
 from _pytest.config import Config
 
@@ -13,7 +12,7 @@ sys.setrecursionlimit(3000)
 # pylint: disable=too-few-public-methods
 
 
-def pytest_load_initial_conftests(early_config: Config, args: List[str]) -> None:
+def pytest_load_initial_conftests(early_config: Config, args: list[str]) -> None:
     """Register boardfarm plugin to pytest based on command line arguments.
 
     :param early_config: pytest config

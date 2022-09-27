@@ -2,7 +2,7 @@
 import json
 import traceback
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from _pytest.config import Config
 from boardfarm3.devices.base_devices import BoardfarmDevice
@@ -16,7 +16,7 @@ _BUTTON_CSS_STYLE = (
 )
 
 
-def _get_value_from_dict(key: str, dictionary: Dict) -> Any:
+def _get_value_from_dict(key: str, dictionary: dict) -> Any:
     """Get value of given key from the dictionary recursively.
 
     This method is used to avoid nested checks for None to get
@@ -38,7 +38,7 @@ def _get_value_from_dict(key: str, dictionary: Dict) -> Any:
 
 def _get_boardfarm_environment_details(
     session_config: Config, boardfarm_config: BoardfarmConfig
-) -> Dict:
+) -> dict:
     """Get boardfarm environment details for html report.
 
     :param session_config: pytest session config
@@ -75,7 +75,7 @@ def _get_onclick_javascript(button_id: str, content_id: str, content_type: str) 
     )
 
 
-def _get_boardfarm_deployment_status(stage: str, stage_logs: Dict) -> List:
+def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list:
     """Get boardfarm deployment status html table content.
 
     :param stage: deployment stage name
@@ -121,7 +121,7 @@ def _get_boardfarm_deployment_status(stage: str, stage_logs: Dict) -> List:
 
 def _get_boardfarm_config_table_data(
     config_name: str, config_path: str, json_config: str
-) -> List:
+) -> list:
     """Get boardfarm config details to put in pytest html report.
 
     :param config_name: config name
@@ -158,7 +158,7 @@ def _get_boardfarm_config_table_data(
     ]
 
 
-def _get_boardfarm_configs_details(session_config: Config) -> List:
+def _get_boardfarm_configs_details(session_config: Config) -> list:
     """Get boardfarm config details as html table rows.
 
     :param session_config: pytest session config
@@ -203,8 +203,8 @@ def get_boardfarm_html_table_report(
     session_config: Config,
     device_manager: DeviceManager,
     boardfarm_config: BoardfarmConfig,
-    deployment_setup_data: Dict,
-    deployment_teardown_data: Dict,
+    deployment_setup_data: dict,
+    deployment_teardown_data: dict,
 ) -> Tag:
     """Get boardfarm html table report.
 

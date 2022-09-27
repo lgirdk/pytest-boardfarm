@@ -21,7 +21,7 @@
         "Topic :: Software Development :: Testing :: Acceptance",
     ]
     dynamic = ['version', 'description']
-    requires-python = ">=3.6"
+    requires-python = ">=3.9"
 
     dependencies = [
         "pytest",
