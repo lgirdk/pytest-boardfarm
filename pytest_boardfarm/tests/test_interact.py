@@ -61,7 +61,7 @@ def run_pytest_test(test, skip_contingency):
             "boardfarm-lgi/boardfarm_lgi/tests/",
             "boardfarm-lgi-shared/boardfarm_lgi_shared/tests/",
             "boardfarm-docsis/boardfarm_docsis/tests/",
-            "boardfarm-lgi-conn-oemqa-tests/boardfarm_lgi_conn_oemqa_tests/tests/",
+            "boardfarm-lgi-conn-oemqa-tests/tests/",
         ]
         cmd_args.extend(["-k", test] + dirs)
     else:
