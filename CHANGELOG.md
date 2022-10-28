@@ -1,7 +1,8 @@
-## 2022.41.0 (2022-10-12)
+## 2022.43.0 (2022-10-28)
 
 ### Fix
 
+- **tests/test_interact.py**: correct oemqa path
 - **pyproject.toml**: remove suite requirements
 
 ## 2022.35.0 (2022-08-31)
