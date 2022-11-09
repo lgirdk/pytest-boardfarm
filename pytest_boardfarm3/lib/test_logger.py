@@ -4,10 +4,10 @@ import logging
 import os
 
 
-class TestLogger:
+class TestLogger:  # pylint: disable=too-few-public-methods
     """Log wrapper to log test steps from tests."""
 
-    # pylint: disable=too-few-public-methods
+    __test__ = False  # Fix PytestCollectionWarning
 
     def __init__(self) -> None:
         """Initialize log wrapper."""
