@@ -1,7 +1,8 @@
-## 2022.45.0 (2022-11-09)
+## 2022.47.0 (2022-11-23)
 
 ### Fix
 
+- change gitlab to github
 - **tests/test_interact.py**: correct oemqa path
 - **pyproject.toml**: remove suite requirements
 
