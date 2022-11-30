@@ -2,38 +2,18 @@
 import json
 import traceback
 from pathlib import Path
-from typing import Any
 
 from _pytest.config import Config
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.device_manager import DeviceManager
+from boardfarm3.lib.utils import get_value_from_dict
 from py.xml import Tag, html  # pylint: disable=no-name-in-module,import-error
 
 _TD_CSS_STYLE = "border: 1px solid #E6E6E6; padding: 3px;"
 _BUTTON_CSS_STYLE = (
     "font-style: oblique; padding-left: 5px; color: #1A237E; cursor: pointer;"
 )
-
-
-def _get_value_from_dict(key: str, dictionary: dict) -> Any:
-    """Get value of given key from the dictionary recursively.
-
-    This method is used to avoid nested checks for None to get
-    a value from dictionary without raising KeyError.
-
-    :param key: key name
-    :param dictionary: dictionary instance
-    :return: value of given key if exists, otherwise None
-    """
-    for name, value in dictionary.items():
-        if name == key:
-            return value
-        if isinstance(value, dict):
-            return_value = _get_value_from_dict(key, value)
-            if return_value is not None:
-                return return_value
-    return None
 
 
 def _get_boardfarm_environment_details(
@@ -47,8 +27,8 @@ def _get_boardfarm_environment_details(
     """
     boardfarm_env_details = {
         "Board name": session_config.option.board_name,
-        "Image name": _get_value_from_dict("image_uri", boardfarm_config.env_config),
-        "Provision mode": _get_value_from_dict(
+        "Image name": get_value_from_dict("image_uri", boardfarm_config.env_config),
+        "Provision mode": get_value_from_dict(
             "eRouter_Provisioning_mode", boardfarm_config.env_config
         ),
     }

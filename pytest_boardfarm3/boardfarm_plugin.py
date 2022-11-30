@@ -145,6 +145,11 @@ class BoardfarmPlugin:
             )
         ):
             pytest.skip("Environment mismatch. Skipping")
+        else:
+            self._plugin_manager.hook.contingency_check(
+                env_req=env_req_marker.args[0], device_manager=self.device_manager
+            )
+
         yield
 
     @pytest.hookimpl(hookwrapper=True)
