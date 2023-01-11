@@ -66,10 +66,19 @@ class BoardfarmPlugin:
 
     def release_boardfarm_devices(self) -> None:
         """Release boardfarm devices after the test execution."""
+        deployment_status = (
+            {"status": "success"}
+            if "exception" not in self._deployment_setup_data
+            else {
+                "status": "failed",
+                "exception": self._deployment_setup_data.get("exception")[1],
+            }
+        )
         self._plugin_manager.hook.boardfarm_release_devices(
             config=self.boardfarm_config,
             cmdline_args=self._session_config.option,
             plugin_manager=self._plugin_manager,
+            deployment_status=deployment_status,
         )
 
     @pytest.hookimpl(hookwrapper=True)
@@ -122,10 +131,12 @@ class BoardfarmPlugin:
         """
         config.addinivalue_line(
             "markers",
-            "env_req(env_req: Dict): mark test with environment request. Skip"
-            " test if environment check fails.\n"
-            'Example: @pytest.mark.env_req({"environment_def":{"board":'
-            '{"eRouter_Provisioning_mode":["dual"]}}})',
+            (
+                "env_req(env_req: Dict): mark test with environment request. Skip"
+                " test if environment check fails.\n"
+                'Example: @pytest.mark.env_req({"environment_def":{"board":'
+                '{"eRouter_Provisioning_mode":["dual"]}}})'
+            ),
         )
 
     @pytest.hookimpl(hookwrapper=True)
