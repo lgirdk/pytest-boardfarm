@@ -18,12 +18,15 @@ _BUTTON_CSS_STYLE = (
 
 def _get_boardfarm_environment_details(
     session_config: Config, boardfarm_config: BoardfarmConfig
-) -> dict:
+) -> dict[str, str]:
     """Get boardfarm environment details for html report.
 
     :param session_config: pytest session config
+    :type session_config: Config
     :param boardfarm_config: boardfarm config
+    :type boardfarm_config: BoardfarmConfig
     :return: boardfarm environment details dictionary
+    :rtype: dict[str, str]
     """
     boardfarm_env_details = {
         "Board name": session_config.option.board_name,
@@ -39,28 +42,35 @@ def _get_onclick_javascript(button_id: str, content_id: str, content_type: str) 
     """Get onclick javascript to show and hide deployment logs.
 
     :param button_id: html button element id
+    :type button_id: str
     :param content_id: html content element id
+    :type content_id: str
     :param content_type: type of the html content
+    :type content_type: str
     :return: javascript to toggle logs on click
+    :rtype: str
     """
     return (
-        f"var el = getElementById('{content_id}'); "
+        f"var el = getElementById({content_id!r}); "
         "if (el.style.display=='none') { "
         "  el.style.display=''; "
-        f"  getElementById('{button_id}').innerHTML='hide {content_type}'"
+        f"  getElementById({button_id!r}).innerHTML='hide {content_type}'"
         "} else {"
         "  el.style.display='none'; "
-        f"  getElementById('{button_id}').innerHTML='view {content_type}'"
+        f"  getElementById({button_id!r}).innerHTML='view {content_type}'"
         "}"
     )
 
 
-def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list:
+def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list[Tag]:
     """Get boardfarm deployment status html table content.
 
     :param stage: deployment stage name
+    :type stage: str
     :param stage_logs: captured deployment logs
+    :type stage_logs: dict
     :return: html table row's with given deployment stage status
+    :rtype: list[Tag]
     """
     console_logs = stage_logs.get("logs", "")
     if "exception" in stage_logs:
@@ -101,13 +111,17 @@ def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list:
 
 def _get_boardfarm_config_table_data(
     config_name: str, config_path: str, json_config: str
-) -> list:
+) -> list[Tag]:
     """Get boardfarm config details to put in pytest html report.
 
     :param config_name: config name
+    :type config_name: str
     :param config_path: config file path
+    :type config_path: str
     :param json_config: formatted json config
+    :type json_config: str
     :return: html table row's with given config details
+    :rtype: list[Tag]
     """
     return [
         html.tr(
@@ -138,11 +152,13 @@ def _get_boardfarm_config_table_data(
     ]
 
 
-def _get_boardfarm_configs_details(session_config: Config) -> list:
+def _get_boardfarm_configs_details(session_config: Config) -> list[Tag]:
     """Get boardfarm config details as html table rows.
 
     :param session_config: pytest session config
+    :type session_config: Config
     :return: html table rows with boardfarm config details
+    :rtype: list[Tag]
     """
     environment_config_path = Path(session_config.option.env_config)
     inventory_config_path = Path(session_config.option.inventory_config)
@@ -189,11 +205,17 @@ def get_boardfarm_html_table_report(
     """Get boardfarm html table report.
 
     :param session_config: pytest session config
+    :type session_config: Config
     :param device_manager: boardfarm device manager
+    :type device_manager: DeviceManager
     :param boardfarm_config: boardfarm config
+    :type boardfarm_config: BoardfarmConfig
     :param deployment_setup_data: boardfarm deployment status data
+    :type deployment_setup_data: dict
     :param deployment_teardown_data: boardfarm deployment teardown data
+    :type deployment_teardown_data: dict
     :return: boardfarm html table report
+    :rtype: Tag
     """
     table_contents = [
         html.tr(
@@ -205,12 +227,14 @@ def get_boardfarm_html_table_report(
         ).items()
     ]
     table_contents.extend(_get_boardfarm_configs_details(session_config))
-    table_contents.extend(
-        _get_boardfarm_deployment_status("setup", deployment_setup_data)
-    )
-    table_contents.extend(
-        _get_boardfarm_deployment_status("teardown", deployment_teardown_data)
-    )
+    if deployment_setup_data:
+        table_contents.extend(
+            _get_boardfarm_deployment_status("setup", deployment_setup_data)
+        )
+    if deployment_teardown_data:
+        table_contents.extend(
+            _get_boardfarm_deployment_status("teardown", deployment_teardown_data)
+        )
     if device_manager is not None:
         deployed_devices = {
             name: device.device_type

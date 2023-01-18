@@ -1,6 +1,7 @@
 """pytest boardfarm plugin module."""
 from collections.abc import Generator
 from datetime import datetime
+from typing import Optional
 
 import pytest
 from _pytest.config import Config
@@ -10,9 +11,9 @@ from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
-from boardfarm3.lib.device_manager import DeviceManager
+from boardfarm3.lib.device_manager import DeviceManager, get_device_manager
 from boardfarm3.main import get_plugin_manager
-from py.xml import html  # pylint: disable=no-name-in-module,import-error
+from py.xml import Tag, html  # pylint: disable=no-name-in-module,import-error
 
 from pytest_boardfarm3.lib.argument_parser import ArgumentParser
 from pytest_boardfarm3.lib.html_report import get_boardfarm_html_table_report
@@ -96,6 +97,13 @@ class BoardfarmPlugin:
             self._session_config.option.inventory_config,
         )
 
+    @staticmethod
+    def _get_device_manager() -> Optional[DeviceManager]:
+        try:
+            return get_device_manager()
+        except ValueError:
+            return None
+
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtestloop(self, session: Session) -> Generator[None, None, None]:
         """Deploy devices to environment and them release after use.
@@ -106,21 +114,26 @@ class BoardfarmPlugin:
         logging_plugin: LoggingPlugin = session.config.pluginmanager.get_plugin(
             "logging-plugin"
         )
+        device_manager = self._get_device_manager()
         try:
-            logging_plugin.log_cli_handler.set_when("boardfarm setup")
-            capture_boardfarm_logs(
-                logging_plugin,
-                self.deploy_boardfarm_devices,
-                capture_to=self._deployment_setup_data,
-            )
+            if device_manager is None:
+                logging_plugin.log_cli_handler.set_when("boardfarm setup")
+                capture_boardfarm_logs(
+                    logging_plugin,
+                    self.deploy_boardfarm_devices,
+                    capture_to=self._deployment_setup_data,
+                )
+            else:
+                self.device_manager = device_manager
             yield
         finally:
-            logging_plugin.log_cli_handler.set_when("boardfarm teardown")
-            capture_boardfarm_logs(
-                logging_plugin,
-                self.release_boardfarm_devices,
-                capture_to=self._deployment_teardown_data,
-            )
+            if device_manager is None:
+                logging_plugin.log_cli_handler.set_when("boardfarm teardown")
+                capture_boardfarm_logs(
+                    logging_plugin,
+                    self.release_boardfarm_devices,
+                    capture_to=self._deployment_teardown_data,
+                )
 
     @staticmethod
     def pytest_configure(config: Config) -> None:
@@ -156,7 +169,7 @@ class BoardfarmPlugin:
             )
         ):
             pytest.skip("Environment mismatch. Skipping")
-        else:
+        elif env_req_marker and env_req_marker.args:
             self._plugin_manager.hook.contingency_check(
                 env_req=env_req_marker.args[0], device_manager=self.device_manager
             )
@@ -179,11 +192,11 @@ class BoardfarmPlugin:
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_table_header(cells: list) -> None:
+    def pytest_html_results_table_header(cells: list[Tag]) -> None:
         """Add test start time custom header in html report.
 
         :param cells: html table header list
-        :type cells: list
+        :type cells: list[Tag]
         """
         cells.insert(0, html.th("Start Time", class_="sortable time", col="time"))
         cells.insert(
@@ -198,13 +211,13 @@ class BoardfarmPlugin:
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_table_row(report: TestReport, cells: list) -> None:
+    def pytest_html_results_table_row(report: TestReport, cells: list[Tag]) -> None:
         """Add test test start time in the html report.
 
         :param report: test execution report
         :type report: TestReport
         :param cells: html table row list
-        :type cells: list
+        :type cells: list[Tag]
         """
         test_start_time = (
             report.test_start_time
@@ -217,11 +230,11 @@ class BoardfarmPlugin:
         cells.insert(1, html.td(start_time_test, class_="col-time"))
 
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_summary(self, postfix: list) -> None:
+    def pytest_html_results_summary(self, postfix: list[Tag]) -> None:
         """Update the html report with boardfarm deployment and environment details.
 
         :param postfix: html report postfix content list
-        :type postfix: list
+        :type postfix: list[Tag]
         """
         postfix.append(html.h3("Boardfarm"))
         postfix.append(
