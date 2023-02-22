@@ -12,10 +12,7 @@ from pytest import fixture
 from pytest_boardfarm3.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
 from pytest_boardfarm3.exceptions import BoardfarmPluginError
 from pytest_boardfarm3.lib.test_logger import TestLogger
-
-
-class ContextStorage:  # pylint: disable=too-few-public-methods
-    """Context storage class to store test context data."""
+from pytest_boardfarm3.lib.utils import ContextStorage
 
 
 @fixture(scope="function")

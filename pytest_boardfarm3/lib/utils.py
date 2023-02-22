@@ -91,3 +91,7 @@ def capture_boardfarm_logs(
                 report_logger.stream.getvalue().strip()
             )
             report_logger.reset()
+
+
+class ContextStorage:  # pylint: disable=too-few-public-methods
+    """Context storage class to store test context data."""
