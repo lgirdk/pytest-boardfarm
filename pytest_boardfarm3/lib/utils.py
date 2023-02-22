@@ -1,8 +1,34 @@
 """Pytest boardfarm utils."""
+import re
 import sys
 from typing import Any, Callable
 
 from _pytest.logging import LoggingPlugin, _remove_ansi_escape_sequences, catching_logs
+
+
+def _perform_contains_check(
+    test_env_request: list[dict[str, str]], boardfarm_env: str
+) -> bool:
+    checks_dict: dict[str, Any] = {
+        "contains_exact": lambda value, env_req: value in env_req,
+        "not_contains_exact": lambda value, env_req: value not in env_req,
+        "contains_regex": re.search,
+        "not_contains_regex": lambda value, env_req: not re.search(value, env_req),
+    }
+    if invalid_checks := {
+        next(iter(item.keys()))
+        for item in test_env_request
+        if next(iter(item.keys())) not in checks_dict
+    }:
+        raise ValueError(
+            f"Invalid contains checks: {invalid_checks}, please check your env_req"
+            " marker"
+        )
+    for contains_check in test_env_request:
+        check, value = next(iter(contains_check.items()))
+        if not checks_dict[check](value, boardfarm_env):
+            return False
+    return True
 
 
 def is_env_matching(test_env_request: Any, boardfarm_env: Any) -> bool:
@@ -61,6 +87,15 @@ def is_env_matching(test_env_request: Any, boardfarm_env: Any) -> bool:
         is_matching = True
     elif test_env_request == boardfarm_env:
         is_matching = True
+    elif (
+        isinstance(test_env_request, list)
+        and isinstance(boardfarm_env, str)
+        and all(
+            isinstance(contains_check_dict, dict) and len(contains_check_dict) == 1
+            for contains_check_dict in test_env_request
+        )
+    ):
+        is_matching = _perform_contains_check(test_env_request, boardfarm_env)
     return is_matching
 
 

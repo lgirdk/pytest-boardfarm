@@ -28,6 +28,9 @@ def pylint(session: nox.Session) -> None:
     session.run("pylint", "pytest_boardfarm3")
 
 
-# @nox.session(python=_PYTHON_VERSIONS)
-# def test(session: nox.Session) -> None:
-#     """Test pytest-boardfarm."""
+@nox.session(python=_PYTHON_VERSIONS)
+def test(session: nox.Session) -> None:
+    """Test pytest-boardfarm."""
+    session.install("--upgrade", "--pre", "boardfarm3")
+    session.install("--upgrade", ".[test]")
+    session.run("pytest", "unittests")
