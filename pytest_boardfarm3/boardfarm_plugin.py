@@ -49,16 +49,6 @@ class BoardfarmPlugin:
 
     def deploy_boardfarm_devices(self) -> None:
         """Deploy boardfarm devices to the environment."""
-        self._plugin_manager.hook.boardfarm_configure(
-            config=self.boardfarm_config,
-            cmdline_args=self._session_config.option,
-            plugin_manager=self._plugin_manager,
-        )
-        self._plugin_manager.hook.boardfarm_reserve_devices(
-            config=self.boardfarm_config,
-            cmdline_args=self._session_config.option,
-            plugin_manager=self._plugin_manager,
-        )
         self.device_manager = self._plugin_manager.hook.boardfarm_deploy_devices(
             config=self.boardfarm_config,
             cmdline_args=self._session_config.option,
@@ -91,10 +81,16 @@ class BoardfarmPlugin:
         """
         yield
         self._session_config = session.config
+        self._plugin_manager.hook.boardfarm_configure(
+            cmdline_args=self._session_config.option,
+            plugin_manager=self._plugin_manager,
+        )
+        inventory_config = self._plugin_manager.hook.boardfarm_reserve_devices(
+            cmdline_args=self._session_config.option,
+            plugin_manager=self._plugin_manager,
+        )
         self.boardfarm_config = parse_boardfarm_config(
-            self._session_config.option.board_name,
-            self._session_config.option.env_config,
-            self._session_config.option.inventory_config,
+            inventory_config, self._session_config.option.env_config
         )
 
     @staticmethod

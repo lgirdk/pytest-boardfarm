@@ -152,44 +152,30 @@ def _get_boardfarm_config_table_data(
     ]
 
 
-def _get_boardfarm_configs_details(session_config: Config) -> list[Tag]:
+def _get_boardfarm_configs_details(
+    session_config: Config, boardfarm_config: BoardfarmConfig
+) -> list[Tag]:
     """Get boardfarm config details as html table rows.
 
     :param session_config: pytest session config
     :type session_config: Config
+    :param boardfarm_config: boardfarm config
+    :type boardfarm_config: BoardfarmConfig
     :return: html table rows with boardfarm config details
     :rtype: list[Tag]
     """
     environment_config_path = Path(session_config.option.env_config)
     inventory_config_path = Path(session_config.option.inventory_config)
-    full_inventory_config = json.loads(
-        inventory_config_path.read_text(encoding="utf-8")
-    )
-    board_name = session_config.option.board_name
-    if board_name in full_inventory_config:
-        inventory_config_json = {
-            board_name: full_inventory_config.get(board_name),
-            full_inventory_config.get(board_name)[
-                "location"
-            ]: full_inventory_config.get(
-                full_inventory_config.get(board_name)["location"]
-            ),
-        }
-    else:
-        inventory_config_json = full_inventory_config
     config_details = _get_boardfarm_config_table_data(
         "inventory",
         str(inventory_config_path.resolve()),
-        json.dumps(inventory_config_json, indent=2),
+        json.dumps(boardfarm_config.inventory_config, indent=2),
     )
     config_details.extend(
         _get_boardfarm_config_table_data(
             "environment",
             str(environment_config_path.resolve()),
-            json.dumps(
-                json.loads(environment_config_path.read_text(encoding="utf-8")),
-                indent=2,
-            ),
+            json.dumps(boardfarm_config.env_config, indent=2),
         )
     )
     return config_details
@@ -226,7 +212,9 @@ def get_boardfarm_html_table_report(
             session_config, boardfarm_config
         ).items()
     ]
-    table_contents.extend(_get_boardfarm_configs_details(session_config))
+    table_contents.extend(
+        _get_boardfarm_configs_details(session_config, boardfarm_config)
+    )
     if deployment_setup_data:
         table_contents.extend(
             _get_boardfarm_deployment_status("setup", deployment_setup_data)
