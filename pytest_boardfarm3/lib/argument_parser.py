@@ -25,7 +25,7 @@ class _OptionGroup:
         :param kwargs: keyword arguments
         :type kwargs: Dict[str, Any]
         """
-        self._group.addoption(*args, **kwargs)  # type: ignore
+        self._group.addoption(*args, **kwargs)  # type: ignore[arg-type]
 
 
 class ArgumentParser:
@@ -46,7 +46,10 @@ class ArgumentParser:
         self._group = parser.getgroup("boardfarm", "boardfarm")
 
     def add_argument_group(  # pylint: disable-next=unused-argument
-        self, name: str, *args: tuple, **kwargs: dict[str, Any]
+        self,
+        name: str,
+        *args: tuple,  # noqa: ARG002
+        **kwargs: dict[str, Any],  # noqa: ARG002
     ) -> _OptionGroup:
         """Add argument group to argument parser.
 
@@ -71,4 +74,4 @@ class ArgumentParser:
         :param kwargs: keyword arguments
         :type kwargs: Dict[str, Any]
         """
-        self._group.addoption(*args, **kwargs)  # type: ignore
+        self._group.addoption(*args, **kwargs)  # type: ignore[arg-type]

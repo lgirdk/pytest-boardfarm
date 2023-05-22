@@ -1,12 +1,11 @@
 """pytest boardfarm plugin module."""
 from collections.abc import Generator
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Optional
 
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
-from _pytest.logging import LoggingPlugin
 from _pytest.main import Session
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
@@ -19,7 +18,13 @@ from pytest_boardfarm3.lib.argument_parser import ArgumentParser
 from pytest_boardfarm3.lib.html_report import get_boardfarm_html_table_report
 from pytest_boardfarm3.lib.utils import capture_boardfarm_logs, is_env_matching
 
+if TYPE_CHECKING:
+    from _pytest.logging import LoggingPlugin
+
 BOARDFARM_PLUGIN_NAME = "_boardfarm"
+
+
+THIS_TZ = datetime.now(timezone.utc).astimezone().tzinfo
 
 
 class BoardfarmPlugin:
@@ -44,7 +49,7 @@ class BoardfarmPlugin:
         :type parser: Parser
         """
         self._plugin_manager.hook.boardfarm_add_cmdline_args(
-            argparser=ArgumentParser(parser)
+            argparser=ArgumentParser(parser),
         )
 
     def deploy_boardfarm_devices(self) -> None:
@@ -90,7 +95,8 @@ class BoardfarmPlugin:
             plugin_manager=self._plugin_manager,
         )
         self.boardfarm_config = parse_boardfarm_config(
-            inventory_config, self._session_config.option.env_config
+            inventory_config,
+            self._session_config.option.env_config,
         )
 
     @staticmethod
@@ -108,7 +114,7 @@ class BoardfarmPlugin:
         :type session: Session
         """
         logging_plugin: LoggingPlugin = session.config.pluginmanager.get_plugin(
-            "logging-plugin"
+            "logging-plugin",
         )
         device_manager = self._get_device_manager()
         try:
@@ -167,7 +173,8 @@ class BoardfarmPlugin:
             pytest.skip("Environment mismatch. Skipping")
         elif env_req_marker and env_req_marker.args:
             self._plugin_manager.hook.contingency_check(
-                env_req=env_req_marker.args[0], device_manager=self.device_manager
+                env_req=env_req_marker.args[0],
+                device_manager=self.device_manager,
             )
 
         yield
@@ -175,7 +182,7 @@ class BoardfarmPlugin:
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(self) -> Generator[None, None, None]:
         """Capture test start and end time for the html report."""
-        self._test_start_time = datetime.now()
+        self._test_start_time = datetime.now(tz=THIS_TZ)
         yield
         self._test_start_time = None
 
@@ -218,7 +225,7 @@ class BoardfarmPlugin:
         test_start_time = (
             report.test_start_time
             if hasattr(report, "test_start_time")
-            else datetime.now()
+            else datetime.now(tz=THIS_TZ)
         )
         epoch_time = test_start_time.strftime("%s %f")
         start_time_test = test_start_time.strftime("%d-%m-%Y %H:%M:%S:%f")
@@ -240,5 +247,5 @@ class BoardfarmPlugin:
                 self.boardfarm_config,
                 self._deployment_setup_data,
                 self._deployment_teardown_data,
-            )
+            ),
         )

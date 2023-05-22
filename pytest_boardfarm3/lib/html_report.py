@@ -17,7 +17,8 @@ _BUTTON_CSS_STYLE = (
 
 
 def _get_boardfarm_environment_details(
-    session_config: Config, boardfarm_config: BoardfarmConfig
+    session_config: Config,
+    boardfarm_config: BoardfarmConfig,
 ) -> dict[str, str]:
     """Get boardfarm environment details for html report.
 
@@ -28,14 +29,14 @@ def _get_boardfarm_environment_details(
     :return: boardfarm environment details dictionary
     :rtype: dict[str, str]
     """
-    boardfarm_env_details = {
+    return {
         "Board name": session_config.option.board_name,
         "Image name": get_value_from_dict("image_uri", boardfarm_config.env_config),
         "Provision mode": get_value_from_dict(
-            "eRouter_Provisioning_mode", boardfarm_config.env_config
+            "eRouter_Provisioning_mode",
+            boardfarm_config.env_config,
         ),
     }
-    return boardfarm_env_details
 
 
 def _get_onclick_javascript(button_id: str, content_id: str, content_type: str) -> str:
@@ -75,7 +76,7 @@ def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list[Tag]:
     console_logs = stage_logs.get("logs", "")
     if "exception" in stage_logs:
         deployment_stage_css_style = "color: red;"
-        deployment_stage_status = f"Failed - {repr(stage_logs['exception'][1])}"
+        deployment_stage_status = f"Failed - {stage_logs['exception'][1]!r}"
         console_logs += "".join(traceback.format_tb(stage_logs["exception"][2]))
     else:
         deployment_stage_status = "Success"
@@ -110,7 +111,9 @@ def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list[Tag]:
 
 
 def _get_boardfarm_config_table_data(
-    config_name: str, config_path: str, json_config: str
+    config_name: str,
+    config_path: str,
+    json_config: str,
 ) -> list[Tag]:
     """Get boardfarm config details to put in pytest html report.
 
@@ -153,7 +156,8 @@ def _get_boardfarm_config_table_data(
 
 
 def _get_boardfarm_configs_details(
-    session_config: Config, boardfarm_config: BoardfarmConfig
+    session_config: Config,
+    boardfarm_config: BoardfarmConfig,
 ) -> list[Tag]:
     """Get boardfarm config details as html table rows.
 
@@ -176,7 +180,7 @@ def _get_boardfarm_configs_details(
             "environment",
             str(environment_config_path.resolve()),
             json.dumps(boardfarm_config.env_config, indent=2),
-        )
+        ),
     )
     return config_details
 
@@ -209,31 +213,32 @@ def get_boardfarm_html_table_report(
             html.td(content, style=_TD_CSS_STYLE),
         )
         for title, content in _get_boardfarm_environment_details(
-            session_config, boardfarm_config
+            session_config,
+            boardfarm_config,
         ).items()
     ]
     table_contents.extend(
-        _get_boardfarm_configs_details(session_config, boardfarm_config)
+        _get_boardfarm_configs_details(session_config, boardfarm_config),
     )
     if deployment_setup_data:
         table_contents.extend(
-            _get_boardfarm_deployment_status("setup", deployment_setup_data)
+            _get_boardfarm_deployment_status("setup", deployment_setup_data),
         )
     if deployment_teardown_data:
         table_contents.extend(
-            _get_boardfarm_deployment_status("teardown", deployment_teardown_data)
+            _get_boardfarm_deployment_status("teardown", deployment_teardown_data),
         )
     if device_manager is not None:
         deployed_devices = {
             name: device.device_type
             for name, device in device_manager.get_devices_by_type(
-                BoardfarmDevice
+                BoardfarmDevice,
             ).items()
         }
         table_contents.append(
             html.tr(
                 html.td("Deployed devices", style=_TD_CSS_STYLE),
                 html.td(json.dumps(deployed_devices), style=_TD_CSS_STYLE),
-            )
+            ),
         )
     return html.table(html.tbody(table_contents))

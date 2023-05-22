@@ -3,11 +3,11 @@
 from argparse import Namespace
 from typing import Any
 
+import pytest
 from _pytest.config import Config
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.device_manager import DeviceManager
-from pytest import fixture
 
 from pytest_boardfarm3.boardfarm_plugin import BOARDFARM_PLUGIN_NAME, BoardfarmPlugin
 from pytest_boardfarm3.exceptions import BoardfarmPluginError
@@ -15,7 +15,7 @@ from pytest_boardfarm3.lib.test_logger import TestLogger
 from pytest_boardfarm3.lib.utils import ContextStorage
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def bf_context() -> ContextStorage:
     """Fixture that return context storage instance.
 
@@ -25,7 +25,7 @@ def bf_context() -> ContextStorage:
     return ContextStorage()
 
 
-@fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def bf_logger() -> TestLogger:
     """Fixture that return test step log wrapper instance.
 
@@ -46,11 +46,12 @@ def get_boardfarm_plugin(pytestconfig: Config) -> BoardfarmPlugin:
     """
     plugin = pytestconfig.pluginmanager.get_plugin(BOARDFARM_PLUGIN_NAME)
     if plugin is None:
-        raise BoardfarmPluginError("boardfarm plugin is not registered.")
+        err_msg = "boardfarm plugin is not registered."
+        raise BoardfarmPluginError(err_msg)
     return plugin
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def boardfarm_config(pytestconfig: Config) -> BoardfarmConfig:
     """Fixture that return boardfarm config.
 
@@ -62,7 +63,7 @@ def boardfarm_config(pytestconfig: Config) -> BoardfarmConfig:
     return get_boardfarm_plugin(pytestconfig).boardfarm_config
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def device_manager(pytestconfig: Config) -> DeviceManager:
     """Fixture that return boardfarm device manager.
 
@@ -74,10 +75,10 @@ def device_manager(pytestconfig: Config) -> DeviceManager:
     return get_boardfarm_plugin(pytestconfig).device_manager
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def devices(
     device_manager: DeviceManager,  # pylint: disable=redefined-outer-name
-) -> Any:
+) -> Any:  # noqa: ANN401
     """Legacy boardfarm devices fixture.
 
     :param device_manager: device manager

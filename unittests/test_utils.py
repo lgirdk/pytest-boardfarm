@@ -16,7 +16,7 @@ env_boot_file = {
 
 
 @pytest.mark.parametrize(
-    "contains_check, contains_check_value, expected",
+    ("contains_check", "contains_check_value", "expected"),
     [
         ("contains_exact", "VendorSpecific", True),
         ("not_contains_exact", "single", True),
@@ -29,7 +29,9 @@ env_boot_file = {
     ],
 )
 def test_contains_check(
-    contains_check: str, contains_check_value: str, expected: bool
+    contains_check: str,
+    contains_check_value: str,
+    expected: bool,
 ) -> None:
     """Unit tests with positive and negative scenarios for `contains_` check.
 
@@ -42,8 +44,8 @@ def test_contains_check(
     """
     test_req = {
         "environment_def": {
-            "board": {"boot_file": [{contains_check: contains_check_value}]}
-        }
+            "board": {"boot_file": [{contains_check: contains_check_value}]},
+        },
     }
     assert is_env_matching(test_req, env_boot_file) == expected
 
@@ -72,7 +74,7 @@ def test_contains_check(
     ],
 )
 def test_unknown_contains_check(
-    unknown_contains_check_list: list[dict[str, str]]
+    unknown_contains_check_list: list[dict[str, str]],
 ) -> None:
     """Unit test to check for an unknown check in test_env_req.
 
@@ -81,14 +83,14 @@ def test_unknown_contains_check(
     :type unknown_contains_check_list: list[dict[str, str]]
     """
     test_req = {
-        "environment_def": {"board": {"boot_file": unknown_contains_check_list}}
+        "environment_def": {"board": {"boot_file": unknown_contains_check_list}},
     }
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid contains checks"):
         is_env_matching(test_req, env_boot_file)
 
 
 @pytest.mark.parametrize(
-    "contains_check_list, expected",
+    ("contains_check_list", "expected"),
     [
         (
             [
@@ -165,7 +167,8 @@ def test_unknown_contains_check(
     ],
 )
 def test_contains_check_combinations(
-    contains_check_list: list[dict[str, str]], expected: bool
+    contains_check_list: list[dict[str, str]],
+    expected: bool,
 ) -> None:
     """Tests with positive and negative scenarios for combinations of `contains_` check.
 

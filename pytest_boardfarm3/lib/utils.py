@@ -7,7 +7,8 @@ from _pytest.logging import LoggingPlugin, _remove_ansi_escape_sequences, catchi
 
 
 def _perform_contains_check(
-    test_env_request: list[dict[str, str]], boardfarm_env: str
+    test_env_request: list[dict[str, str]],
+    boardfarm_env: str,
 ) -> bool:
     checks_dict: dict[str, Any] = {
         "contains_exact": lambda value, env_req: value in env_req,
@@ -20,10 +21,11 @@ def _perform_contains_check(
         for item in test_env_request
         if next(iter(item.keys())) not in checks_dict
     }:
-        raise ValueError(
-            f"Invalid contains checks: {invalid_checks}, please check your env_req"
-            " marker"
+        err_msg = (
+            f"Invalid contains checks: {invalid_checks}, please check "
+            "your env_req marker"
         )
+        raise ValueError(err_msg)
     for contains_check in test_env_request:
         check, value = next(iter(contains_check.items()))
         if not checks_dict[check](value, boardfarm_env):
@@ -31,7 +33,7 @@ def _perform_contains_check(
     return True
 
 
-def is_env_matching(test_env_request: Any, boardfarm_env: Any) -> bool:
+def is_env_matching(test_env_request: Any, boardfarm_env: Any) -> bool:  # noqa: ANN401
     """Check test environment request is a subset of boardfarm environment.
 
     Recursively checks dictionaries for match. A value of None in the test
@@ -100,7 +102,9 @@ def is_env_matching(test_env_request: Any, boardfarm_env: Any) -> bool:
 
 
 def capture_boardfarm_logs(
-    logging_plugin: LoggingPlugin, function: Callable, capture_to: dict
+    logging_plugin: LoggingPlugin,
+    function: Callable,
+    capture_to: dict,
 ) -> None:
     """Capture boardfarm logs on given function execution.
 
@@ -113,17 +117,18 @@ def capture_boardfarm_logs(
     :param capture_to: dictionary instance to save captured logs
     """
     with catching_logs(
-        logging_plugin.report_handler, logging_plugin.log_level
+        logging_plugin.report_handler,
+        logging_plugin.log_level,
     ) as report_logger:
         report_logger.reset()
         try:
             function()
-        except:  # noqa: E722,B001 # we capture all exceptions
+        except Exception:  # we capture all exceptions
             capture_to["exception"] = sys.exc_info()
             raise
         finally:
             capture_to["logs"] = _remove_ansi_escape_sequences(
-                report_logger.stream.getvalue().strip()
+                report_logger.stream.getvalue().strip(),
             )
             report_logger.reset()
 
