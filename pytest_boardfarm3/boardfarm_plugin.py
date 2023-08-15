@@ -54,10 +54,16 @@ class BoardfarmPlugin:
 
     def deploy_boardfarm_devices(self) -> None:
         """Deploy boardfarm devices to the environment."""
-        self.device_manager = self._plugin_manager.hook.boardfarm_deploy_devices(
+        self.device_manager = self._plugin_manager.hook.boardfarm_register_devices(
             config=self.boardfarm_config,
             cmdline_args=self._session_config.option,
             plugin_manager=self._plugin_manager,
+        )
+        self._plugin_manager.hook.boardfarm_setup_env(
+            config=self.boardfarm_config,
+            cmdline_args=self._session_config.option,
+            plugin_manager=self._plugin_manager,
+            device_manager=self.device_manager,
         )
 
     def release_boardfarm_devices(self) -> None:
