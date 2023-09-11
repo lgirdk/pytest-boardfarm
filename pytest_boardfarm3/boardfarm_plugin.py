@@ -4,15 +4,10 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
 import pytest
-from _pytest.config import Config
-from _pytest.config.argparsing import Parser
-from _pytest.main import Session
-from _pytest.nodes import Item
-from _pytest.reports import TestReport
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
 from boardfarm3.lib.device_manager import DeviceManager, get_device_manager
 from boardfarm3.main import get_plugin_manager
-from py.xml import Tag, html  # pylint: disable=no-name-in-module,import-error
+from pytest import Config, Item, Parser, Session, TestReport  # noqa: PT013
 
 from pytest_boardfarm3.lib.argument_parser import ArgumentParser
 from pytest_boardfarm3.lib.html_report import get_boardfarm_html_table_report
@@ -152,12 +147,10 @@ class BoardfarmPlugin:
         """
         config.addinivalue_line(
             "markers",
-            (
-                "env_req(env_req: Dict): mark test with environment request. Skip"
-                " test if environment check fails.\n"
-                'Example: @pytest.mark.env_req({"environment_def":{"board":'
-                '{"eRouter_Provisioning_mode":["dual"]}}})'
-            ),
+            "env_req(env_req: Dict): mark test with environment request. Skip"
+            " test if environment check fails.\n"
+            'Example: @pytest.mark.env_req({"environment_def":{"board":'
+            '{"eRouter_Provisioning_mode":["dual"]}}})',
         )
 
     @pytest.hookimpl(hookwrapper=True)
@@ -201,32 +194,28 @@ class BoardfarmPlugin:
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_table_header(cells: list[Tag]) -> None:
+    def pytest_html_results_table_header(cells: list[str]) -> None:
         """Add test start time custom header in html report.
 
         :param cells: html table header list
-        :type cells: list[Tag]
+        :type cells: list[str]
         """
-        cells.insert(0, html.th("Start Time", class_="sortable time", col="time"))
+        cells.insert(0, '<th class="sortable" data-column-type="time">Start Time</th>')
         cells.insert(
             1,
-            html.th(
-                "Hidden Time",
-                class_="sortable time",
-                col="time",
-                style="display: none;",
-            ),
+            '<th class="sortable" data-column-type="time" style="display: none;">'
+            "Hidden Time</th>",
         )
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_table_row(report: TestReport, cells: list[Tag]) -> None:
+    def pytest_html_results_table_row(report: TestReport, cells: list[str]) -> None:
         """Add test test start time in the html report.
 
         :param report: test execution report
         :type report: TestReport
         :param cells: html table row list
-        :type cells: list[Tag]
+        :type cells: list[str]
         """
         test_start_time = (
             report.test_start_time
@@ -235,23 +224,29 @@ class BoardfarmPlugin:
         )
         epoch_time = test_start_time.strftime("%s %f")
         start_time_test = test_start_time.strftime("%d-%m-%Y %H:%M:%S:%f")
-        cells.insert(0, html.td(epoch_time, class_="col-epoch", style="display: none;"))
-        cells.insert(1, html.td(start_time_test, class_="col-time"))
+        cells.insert(
+            0,
+            f'<td class="col-time" style="display: none;">{epoch_time}</td>',
+        )
+        cells.insert(1, f'<td class="col-time">{start_time_test}</td>')
 
     @pytest.hookimpl(optionalhook=True)
-    def pytest_html_results_summary(self, postfix: list[Tag]) -> None:
+    def pytest_html_results_summary(self, postfix: list[str]) -> None:
         """Update the html report with boardfarm deployment and environment details.
 
         :param postfix: html report postfix content list
-        :type postfix: list[Tag]
+        :type postfix: list[str]
         """
-        postfix.append(html.h3("Boardfarm"))
-        postfix.append(
-            get_boardfarm_html_table_report(
-                self._session_config,
-                self.device_manager,
-                self.boardfarm_config,
-                self._deployment_setup_data,
-                self._deployment_teardown_data,
-            ),
+        postfix.extend(
+            [
+                "<h3>Boardfarm</h3>",
+                get_boardfarm_html_table_report(
+                    self._session_config,
+                    self.device_manager,
+                    self.boardfarm_config,
+                    self._deployment_setup_data,
+                    self._deployment_teardown_data,
+                ),
+                "<br>",
+            ],
         )

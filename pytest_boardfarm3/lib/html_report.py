@@ -3,12 +3,11 @@ import json
 import traceback
 from pathlib import Path
 
-from _pytest.config import Config
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.device_manager import DeviceManager
 from boardfarm3.lib.utils import get_value_from_dict
-from py.xml import Tag, html  # pylint: disable=no-name-in-module,import-error
+from pytest import Config  # noqa: PT013
 
 _TD_CSS_STYLE = "border: 1px solid #E6E6E6; padding: 3px;"
 _BUTTON_CSS_STYLE = (
@@ -63,7 +62,7 @@ def _get_onclick_javascript(button_id: str, content_id: str, content_type: str) 
     )
 
 
-def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list[Tag]:
+def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list[str]:
     """Get boardfarm deployment status html table content.
 
     :param stage: deployment stage name
@@ -71,41 +70,39 @@ def _get_boardfarm_deployment_status(stage: str, stage_logs: dict) -> list[Tag]:
     :param stage_logs: captured deployment logs
     :type stage_logs: dict
     :return: html table row's with given deployment stage status
-    :rtype: list[Tag]
+    :rtype: list[str]
     """
     console_logs = stage_logs.get("logs", "")
     if "exception" in stage_logs:
+        logs_toggle_button = "hide logs"
         deployment_stage_css_style = "color: red;"
         deployment_stage_status = f"Failed - {stage_logs['exception'][1]!r}"
         console_logs += "".join(traceback.format_tb(stage_logs["exception"][2]))
     else:
+        logs_toggle_button = "view logs"
         deployment_stage_status = "Success"
         deployment_stage_css_style = "color: green;"
+    span_onclick = _get_onclick_javascript(
+        f"boardfarm-{stage}-button",
+        f"boardfarm-{stage}-logs",
+        "logs",
+    )
+    span = (
+        f'<span style="{_BUTTON_CSS_STYLE}" id="boardfarm-{stage}-button"'
+        f' onclick="{span_onclick}" >{logs_toggle_button}</span>'
+    )
+    logs_style = "" if "exception" in stage_logs else "display: none;"
     return [
-        html.tr(
-            html.td(f"Boardfarm {stage}", style=_TD_CSS_STYLE),
-            html.td(
-                deployment_stage_status,
-                html.span(
-                    "hide logs" if "exception" in stage_logs else "view logs",
-                    id=f"boardfarm-{stage}-button",
-                    onclick=_get_onclick_javascript(
-                        f"boardfarm-{stage}-button",
-                        f"boardfarm-{stage}-logs",
-                        "logs",
-                    ),
-                    style=_BUTTON_CSS_STYLE,
-                ),
-                style=f"{_TD_CSS_STYLE}{deployment_stage_css_style}",
-            ),
+        (
+            f'<tr><td style="{_TD_CSS_STYLE}">Boardfarm {stage}</td><td'
+            f' style="{_TD_CSS_STYLE} {deployment_stage_css_style}">'
+            f"{deployment_stage_status} {span}</td></tr>"
         ),
-        html.tr(
-            html.td(
-                html.div(console_logs, class_="log", style="word-break: break-all;"),
-                colspan="2",
-            ),
-            id=f"boardfarm-{stage}-logs",
-            style="" if "exception" in stage_logs else "display: none;",
+        (
+            f'<tr id="boardfarm-{stage}-logs" style="{logs_style}"><td colspan="2"><div'
+            ' class="logwrapper" style="max-height: none"><div class="log"'
+            ' style="word-break: break-all; top: 0px;"'
+            f">{console_logs}</div></div></td></tr>"
         ),
     ]
 
@@ -114,7 +111,7 @@ def _get_boardfarm_config_table_data(
     config_name: str,
     config_path: str,
     json_config: str,
-) -> list[Tag]:
+) -> list[str]:
     """Get boardfarm config details to put in pytest html report.
 
     :param config_name: config name
@@ -124,33 +121,27 @@ def _get_boardfarm_config_table_data(
     :param json_config: formatted json config
     :type json_config: str
     :return: html table row's with given config details
-    :rtype: list[Tag]
+    :rtype: list[str]
     """
+    span_onclick = _get_onclick_javascript(
+        f"boardfarm-{config_name}-button",
+        f"boardfarm-{config_name}-config",
+        "config",
+    )
+    span = (
+        f'<span style="{_BUTTON_CSS_STYLE}" id="boardfarm-{config_name}-button"'
+        f' onclick="{span_onclick}">view config</span>'
+    )
     return [
-        html.tr(
-            html.td(f"{config_name.capitalize()} config", style=_TD_CSS_STYLE),
-            html.td(
-                config_path,
-                html.span(
-                    "view config",
-                    id=f"boardfarm-{config_name}-button",
-                    onclick=_get_onclick_javascript(
-                        f"boardfarm-{config_name}-button",
-                        f"boardfarm-{config_name}-config",
-                        "config",
-                    ),
-                    style=_BUTTON_CSS_STYLE,
-                ),
-                style=_TD_CSS_STYLE,
-            ),
+        (
+            f'<r><td style="{_TD_CSS_STYLE}">{config_name.capitalize()} config</td><td'
+            f' style="{_TD_CSS_STYLE}">{config_path} {span}</td></tr>'
         ),
-        html.tr(
-            html.td(
-                html.div(json_config, class_="log", style="word-break: break-all;"),
-                colspan="2",
-            ),
-            id=f"boardfarm-{config_name}-config",
-            style="display: none;",
+        (
+            f'<tr id="boardfarm-{config_name}-config" style="display: none;"><td'
+            ' colspan="2"><div class="logwrapper" style="max-height: none"><div'
+            ' class="log"style="word-break: break-all; top: 0px;"'
+            f">{json_config}</div></div></td></tr>"
         ),
     ]
 
@@ -158,7 +149,7 @@ def _get_boardfarm_config_table_data(
 def _get_boardfarm_configs_details(
     session_config: Config,
     boardfarm_config: BoardfarmConfig,
-) -> list[Tag]:
+) -> list[str]:
     """Get boardfarm config details as html table rows.
 
     :param session_config: pytest session config
@@ -166,19 +157,19 @@ def _get_boardfarm_configs_details(
     :param boardfarm_config: boardfarm config
     :type boardfarm_config: BoardfarmConfig
     :return: html table rows with boardfarm config details
-    :rtype: list[Tag]
+    :rtype: list[str]
     """
     environment_config_path = Path(session_config.option.env_config)
     inventory_config_path = Path(session_config.option.inventory_config)
     config_details = _get_boardfarm_config_table_data(
         "inventory",
-        str(inventory_config_path.resolve()),
+        str(inventory_config_path),
         json.dumps(boardfarm_config.inventory_config, indent=2),
     )
     config_details.extend(
         _get_boardfarm_config_table_data(
             "environment",
-            str(environment_config_path.resolve()),
+            str(environment_config_path),
             json.dumps(boardfarm_config.env_config, indent=2),
         ),
     )
@@ -191,7 +182,7 @@ def get_boardfarm_html_table_report(
     boardfarm_config: BoardfarmConfig,
     deployment_setup_data: dict,
     deployment_teardown_data: dict,
-) -> Tag:
+) -> str:
     """Get boardfarm html table report.
 
     :param session_config: pytest session config
@@ -205,13 +196,11 @@ def get_boardfarm_html_table_report(
     :param deployment_teardown_data: boardfarm deployment teardown data
     :type deployment_teardown_data: dict
     :return: boardfarm html table report
-    :rtype: Tag
+    :rtype: str
     """
     table_contents = [
-        html.tr(
-            html.td(title, style=_TD_CSS_STYLE),
-            html.td(content, style=_TD_CSS_STYLE),
-        )
+        f'<tr><td style="{_TD_CSS_STYLE}">{title}</td><td'
+        f' style="{_TD_CSS_STYLE}">{content}</td></tr>'
         for title, content in _get_boardfarm_environment_details(
             session_config,
             boardfarm_config,
@@ -236,9 +225,7 @@ def get_boardfarm_html_table_report(
             ).items()
         }
         table_contents.append(
-            html.tr(
-                html.td("Deployed devices", style=_TD_CSS_STYLE),
-                html.td(json.dumps(deployed_devices), style=_TD_CSS_STYLE),
-            ),
+            f'<tr><td style="{_TD_CSS_STYLE}">Deployed devices</td><td'
+            f' style="{_TD_CSS_STYLE}">{json.dumps(deployed_devices)}</td></tr>',
         )
-    return html.table(html.tbody(table_contents))
+    return f'<table><tbody>{"".join(table_contents)}</tbody></table>'
