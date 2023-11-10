@@ -66,6 +66,7 @@ class Results(dict):
         library.create_results_html(self, config, logger)
 
 
+# pylint:disable=unsubscriptable-object,unsupported-assignment-operation
 def add_results(test_result):
     """Updates the session results dict in a similar way to what is generated in
     boardfarm/library.py
