@@ -230,6 +230,7 @@ def pytest_runtest_setup(item):
     elif (
         not this.IP
         and this.PYTESTCONFIG.getoption("--bfskip_contingency")
+        and this.ENV_HELPER.get_software().get("shell_enabled", True)
         and "interact" not in item.name.lower()
     ):
         this.IP["board"] = this.DEVICES.board.get_ifaces_ip_dict()
