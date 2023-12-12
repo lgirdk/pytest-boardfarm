@@ -1,3 +1,13 @@
+## 2023.50.0 (2023-12-12)
+
+### Feat
+
+- **tst_results.py**: make code base python3.11 compatible and fix pylint issues
+
+### Fix
+
+- allow boot for no shell images
+
 ## 2023.45.0 (2023-11-08)
 
 ## 2023.43.0 (2023-10-24)
