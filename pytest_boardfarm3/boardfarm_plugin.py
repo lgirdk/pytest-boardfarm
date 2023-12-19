@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -59,11 +60,13 @@ class BoardfarmPlugin:
             cmdline_args=self._session_config.option,
             plugin_manager=self._plugin_manager,
         )
-        self._plugin_manager.hook.boardfarm_setup_env(
-            config=self.boardfarm_config,
-            cmdline_args=self._session_config.option,
-            plugin_manager=self._plugin_manager,
-            device_manager=self.device_manager,
+        asyncio.run(
+            self._plugin_manager.hook.boardfarm_setup_env(
+                config=self.boardfarm_config,
+                cmdline_args=self._session_config.option,
+                plugin_manager=self._plugin_manager,
+                device_manager=self.device_manager,
+            ),
         )
 
     def release_boardfarm_devices(self) -> None:
