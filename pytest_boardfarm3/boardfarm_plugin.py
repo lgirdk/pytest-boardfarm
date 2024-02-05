@@ -1,7 +1,9 @@
 """pytest boardfarm plugin module."""
-from collections.abc import Generator
+
+from __future__ import annotations
+
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import pytest
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
@@ -14,7 +16,10 @@ from pytest_boardfarm3.lib.html_report import get_boardfarm_html_table_report
 from pytest_boardfarm3.lib.utils import capture_boardfarm_logs, is_env_matching
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from _pytest.logging import LoggingPlugin
+
 
 BOARDFARM_PLUGIN_NAME = "_boardfarm"
 
@@ -101,7 +106,7 @@ class BoardfarmPlugin:
         )
 
     @staticmethod
-    def _get_device_manager() -> Optional[DeviceManager]:
+    def _get_device_manager() -> DeviceManager | None:
         try:
             return get_device_manager()
         except ValueError:

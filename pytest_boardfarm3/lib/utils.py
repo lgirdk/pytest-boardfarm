@@ -1,4 +1,5 @@
 """Pytest boardfarm utils."""
+
 import re
 import sys
 from typing import Any, Callable

@@ -1,4 +1,5 @@
 """Pytest execution html report."""
+
 import json
 import traceback
 from pathlib import Path
