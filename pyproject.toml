@@ -135,7 +135,6 @@
     ]
     select = ["ALL"]
 
-
     # Allow autofix for all enabled rules (when `--fix`) is provided.
     fixable = [
         "COM",
@@ -145,7 +144,6 @@
         "SIM",
         "UP",
     ]
-
 
     # Exclude a variety of commonly ignored directories.
     exclude = [
@@ -175,9 +173,6 @@
     # Same as Black.
     line-length = 88
 
-    # Allow unused variables when underscore-prefixed.
-    dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
     target-version = "py39"
 
     unfixable = [
@@ -185,11 +180,19 @@
     ]
     [tool.ruff.per-file-ignores]
         "unittests/*" = [
-            "INP001", # pytest works this way
-            "S101",   # we do use assert in unit test written for pytest
+            "INP001",  # pytest works this way
+            "S101",    # we do use assert in unit test written for pytest
+            "D103",    # doc-strings are not mandatory for unittests
+            "SLF001",  # we do access private members for validation in unittests
+            "E501",    # line too long errors are ignored for unittests
+            "ANN401",  # dynamically typed expressions (typing.Any) are used in arguments
+            "PLR2004", # Magic value used in comparison
         ]
-
 
     [tool.ruff.mccabe]
         # Unlike Flake8, default to a complexity level of 10.
         max-complexity = 10
+
+    [tool.ruff.format]
+        # Enable reformatting of code snippets in docstrings.
+        docstring-code-format = true
