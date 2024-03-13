@@ -42,7 +42,7 @@
             "mypy",
             "pre-commit",
             "pylint",
-            "ruff",
+            "ruff==v0.2.2",
         ]
         doc = ["sphinx"]
         test = [
