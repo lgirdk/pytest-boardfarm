@@ -33,7 +33,6 @@
 
     [project.optional-dependencies]
         dev = [
-            "black",
             "darglint",
             "flake8",
             "flake8-bugbear",
@@ -79,9 +78,6 @@
         "pyproject.toml:version",
         "pyproject.toml:current",
     ]
-
-[tool.isort]
-    profile = "black"
 
 [tool.mypy]
     disallow_untyped_defs  = true
@@ -132,6 +128,8 @@
         "PT003",  # allow scope=function to be explicitly passed to fixtures
         "SIM114", # simplify if-elif by AND/OR combinations
         "TD",     # would conflict with TODO highligther
+        "COM812", # The following rule may cause conflicts when used with the formatter
+        "ISC001", # The following rule may cause conflicts when used with the formatter
     ]
     select = ["ALL"]
 
@@ -170,7 +168,6 @@
         "venv",
     ]
 
-    # Same as Black.
     line-length = 88
 
     target-version = "py39"

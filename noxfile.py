@@ -14,9 +14,8 @@ def lint(session: nox.Session) -> None:
     """Lint pytest-boardfarm."""
     session.install("--upgrade", "--pre", "boardfarm3")
     session.install("--upgrade", ".[dev]")
-    session.run("black", ".", "--check")
-    session.run("isort", ".", "--check-only")
-    session.run("flake8", ".")
+    session.run("ruff", "format", "--check", ".")
+    session.run("ruff", "check", ".")
     session.run("mypy", "pytest_boardfarm3")
 
 
