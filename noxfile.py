@@ -23,6 +23,7 @@ def lint(session: nox.Session) -> None:
     session.run("ruff", "format", "--check", ".")
     session.run("ruff", "check", ".")
     session.run("mypy", "pytest_boardfarm3")
+    session.run("darglint2", "-s", "sphinx", "-x", "pytest_boardfarm3")
 
 
 @nox.session(python=_PYTHON_VERSIONS)

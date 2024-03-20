@@ -107,3 +107,8 @@ repos:
             stages: [push]
             pass_filenames: false
             types: [python]
+    - repo: https://github.com/akaihola/darglint2
+      rev: v1.8.2
+      hooks:
+          - id: darglint2
+            args: [-s, sphinx, -x, pytest_boardfarm3]

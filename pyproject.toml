@@ -33,7 +33,7 @@
 
     [project.optional-dependencies]
         dev = [
-            "darglint",
+            "darglint2",
             "flake8",
             "flake8-bugbear",
             "flake8-docstrings",
