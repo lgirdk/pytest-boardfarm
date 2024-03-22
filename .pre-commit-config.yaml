@@ -102,7 +102,7 @@ repos:
       rev: v1.8.2
       hooks:
           - id: darglint2
-            args: [-s, sphinx, -x, pytest_boardfarm3]
+            args: [-x, pytest_boardfarm3]
     - repo: local
       hooks:
           - id: nox
