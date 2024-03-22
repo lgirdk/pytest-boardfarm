@@ -33,7 +33,7 @@
 
     [project.optional-dependencies]
         dev = [
-            "darglint2",
+            "darglint2==v1.8.2",
             "flake8",
             "flake8-bugbear",
             "flake8-docstrings",
@@ -42,7 +42,7 @@
             "mypy",
             "pre-commit",
             "pylint",
-            "ruff==v0.2.2",
+            "ruff==v0.3.3",
         ]
         doc = ["sphinx"]
         test = [
