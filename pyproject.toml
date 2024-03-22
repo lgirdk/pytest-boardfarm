@@ -39,7 +39,6 @@
             "flake8-docstrings",
             "flake8-rst",
             "flake8-rst-docstrings",
-            "nox[uv]",
             "mypy",
             "pre-commit",
             "pylint",
