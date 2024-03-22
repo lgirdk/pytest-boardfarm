@@ -66,16 +66,6 @@ repos:
             files: \.py$
             args: [--in-place]
             stages: [commit]
-    - repo: https://github.com/astral-sh/ruff-pre-commit
-      # Ruff version.
-      rev: v0.3.3
-      hooks:
-          - id: ruff
-            # https://docs.astral.sh/ruff/formatter/#sorting-imports
-            args: [check, --select, I, --fix]
-            name: ruff-isort
-          - id: ruff-format
-          - id: ruff
     - repo: https://github.com/asottile/pyupgrade
       rev: v3.15.1
       hooks:
@@ -98,6 +88,21 @@ repos:
           - id: yamllint
             args: [--format, parsable, --strict]
             stages: [commit]
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      # Ruff version.
+      rev: v0.3.3
+      hooks:
+          - id: ruff
+            # https://docs.astral.sh/ruff/formatter/#sorting-imports
+            args: [check, --select, I, --fix]
+            name: ruff-isort
+          - id: ruff-format
+          - id: ruff
+    - repo: https://github.com/akaihola/darglint2
+      rev: v1.8.2
+      hooks:
+          - id: darglint2
+            args: [-s, sphinx, -x, pytest_boardfarm3]
     - repo: local
       hooks:
           - id: nox
@@ -107,8 +112,3 @@ repos:
             stages: [push]
             pass_filenames: false
             types: [python]
-    - repo: https://github.com/akaihola/darglint2
-      rev: v1.8.2
-      hooks:
-          - id: darglint2
-            args: [-s, sphinx, -x, pytest_boardfarm3]
