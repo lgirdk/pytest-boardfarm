@@ -169,7 +169,7 @@
         unfixable = [
             "F401", # unused imports - we must know if we forgot something...
         ]
-    [tool.ruff.per-file-ignores]
+    [tool.ruff.lint.per-file-ignores]
         "unittests/*" = [
             "INP001",  # pytest works this way
             "S101",    # we do use assert in unit test written for pytest
@@ -180,7 +180,7 @@
             "PLR2004", # Magic value used in comparison
         ]
 
-    [tool.ruff.mccabe]
+    [tool.ruff.lint.mccabe]
         # Unlike Flake8, default to a complexity level of 10.
         max-complexity = 10
 
