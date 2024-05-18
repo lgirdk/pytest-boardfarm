@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import re
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
 from boardfarm3.lib.device_manager import DeviceManager, get_device_manager
 from boardfarm3.main import get_plugin_manager
-from pytest import Config, Item, Parser, Session, TestReport  # noqa: PT013
+from pytest import CallInfo, Config, Item, Parser, Session, TestReport  # noqa: PT013
 
 from pytest_boardfarm3.lib.argument_parser import ArgumentParser
 from pytest_boardfarm3.lib.html_report import get_boardfarm_html_table_report
@@ -19,6 +22,7 @@ from pytest_boardfarm3.lib.utils import capture_boardfarm_logs, is_env_matching
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+    from _pytest.config import _PluggyPlugin
     from _pytest.logging import LoggingPlugin
 
 
@@ -193,12 +197,38 @@ class BoardfarmPlugin:
         yield
         self._test_start_time = None
 
+    def _image_to_base64(self, image_path: str) -> str:
+        with Path(image_path).open("rb") as image_file:
+            return base64.b64encode(image_file.read()).decode("utf-8")
+
+    def _add_screenshots_to_pytest_html(
+        self, report: TestReport, pytest_html: _PluggyPlugin
+    ) -> None:
+        """Add screenshots to pytest html report."""
+        extras: list[Any] = getattr(report, "extras", [])
+        if "screenshot" in report.caplog.lower():
+            screenshot_paths = re.findall(r"'([^']*.png)'", report.caplog)
+            if report.when == "call":
+                extras = [
+                    pytest_html.extras.image(  # type: ignore[attr-defined]
+                        self._image_to_base64(screenshot_path)
+                    )
+                    for screenshot_path in screenshot_paths
+                ]
+                report.extras = extras  # type: ignore[attr-defined]
+
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_makereport(self) -> Generator[None, None, None]:
+    def pytest_runtest_makereport(
+        self,
+        item: Item,
+        call: CallInfo,  # noqa: ARG002
+    ) -> Generator[None, None, None]:
         """Save test start time to put in html execution report."""
+        pytest_html = item.config.pluginmanager.getplugin("html")
         outcome = yield
         report: TestReport = outcome.get_result()  # type: ignore[attr-defined]
         report.test_start_time = self._test_start_time  # type: ignore[attr-defined]
+        self._add_screenshots_to_pytest_html(report, pytest_html)
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
