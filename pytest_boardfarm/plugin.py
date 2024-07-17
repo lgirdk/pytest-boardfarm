@@ -6,6 +6,7 @@ import traceback
 import unicodedata
 from datetime import datetime
 from pathlib import Path
+from subprocess import run
 
 import boardfarm
 import boardfarm_docsis.lib.booting
@@ -190,6 +191,14 @@ def __set_cache_ips():
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_setup(item):
+
+    # Debug statements starts below can be removed after (BOARDFARM-5147)
+    results_folder = os.path.realpath("results")
+    process = run(["du", "-sh", results_folder], capture_output=True, text=True)
+    logger.info(
+        f"{'=' * 20}\nresult size before {item.name}\n\n {process.stdout}\n {'=' * 20}"
+    )
+    # Debug statements ends
 
     env_req = None
     # starttime and stationid properties are added under the properties tag of the result XML
