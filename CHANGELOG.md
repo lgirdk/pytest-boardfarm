@@ -1,3 +1,9 @@
+## 2024.31.0 (2024-08-01)
+
+### Fix
+
+- **pytest_boardfarm/plugin.py**: add debug statement for result
+
 ## 2024.29.0 (2024-07-18)
 
 ## 2024.27.0 (2024-07-03)
