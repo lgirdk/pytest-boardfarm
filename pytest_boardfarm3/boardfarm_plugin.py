@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
@@ -12,6 +13,7 @@ from boardfarm3.lib.device_manager import DeviceManager, get_device_manager
 from boardfarm3.main import get_plugin_manager
 from pytest import Config, Item, Parser, Session, TestReport  # noqa: PT013
 
+from pytest_boardfarm3.configs import LOGGING_CONFIG
 from pytest_boardfarm3.lib.argument_parser import ArgumentParser
 from pytest_boardfarm3.lib.html_report import get_boardfarm_html_table_report
 from pytest_boardfarm3.lib.utils import capture_boardfarm_logs, is_env_matching
@@ -23,7 +25,6 @@ if TYPE_CHECKING:
 
 
 BOARDFARM_PLUGIN_NAME = "_boardfarm"
-
 
 THIS_TZ = datetime.now(timezone.utc).astimezone().tzinfo
 
@@ -153,6 +154,7 @@ class BoardfarmPlugin:
         :param config: pytest config
         :type config: Config
         """
+        logging.config.dictConfig(LOGGING_CONFIG)
         config.addinivalue_line(
             "markers",
             "env_req(env_req: Dict): mark test with environment request. Skip"
