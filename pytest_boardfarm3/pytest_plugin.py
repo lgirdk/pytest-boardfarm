@@ -21,5 +21,5 @@ def pytest_load_initial_conftests(early_config: Config, args: list[str]) -> None
     :type args: list[str]
     """
     early_config.pluginmanager.register(boardfarm_fixtures)
-    if any(x for x in args if x in ("--help", "-h", "--board-name")):
+    if any(x for x in args if (x in ("--help", "-h") or x.startswith("--board"))):
         early_config.pluginmanager.register(BoardfarmPlugin(), BOARDFARM_PLUGIN_NAME)
