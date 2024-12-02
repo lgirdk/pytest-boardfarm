@@ -161,11 +161,14 @@ def _get_boardfarm_configs_details(
     :rtype: list[str]
     """
     environment_config_path = Path(session_config.option.env_config)
-    inventory_config_path = Path(session_config.option.inventory_config)
+    if session_config.option.inventory_config:
+        inventory_config_path = str(Path(session_config.option.inventory_config))
+    else:
+        inventory_config_path = ""
     config_details = _get_boardfarm_config_table_data(
         "inventory",
-        str(inventory_config_path),
-        json.dumps(boardfarm_config.inventory_config, indent=2),
+        inventory_config_path,
+        json.dumps(boardfarm_config.inventory_config, indent=4),
     )
     config_details.extend(
         _get_boardfarm_config_table_data(
