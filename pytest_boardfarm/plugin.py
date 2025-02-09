@@ -4,6 +4,7 @@ import sys
 import time
 import traceback
 import unicodedata
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from subprocess import run
@@ -226,7 +227,8 @@ def pytest_runtest_setup(item):
         and "interact" not in item.name.lower()
     ):
         try:
-            this.ENV_HELPER.env_check(env_req)
+            copy_env_req = deepcopy(env_req)
+            this.ENV_HELPER.env_check(copy_env_req)
         except BftEnvMismatch:
             pytest.skip("Environment mismatch. Skipping")
         try:
@@ -310,7 +312,8 @@ def pytest_runtest_protocol(item):
                 mark.args[0] for mark in i.iter_markers(name="env_req")
             ] or [{}]
             try:
-                this.ENV_HELPER.env_check(item_env_req[0])
+                copy_item_env_req = deepcopy(item_env_req)
+                this.ENV_HELPER.env_check(copy_item_env_req[0])
                 break
             except BftEnvMismatch:
                 continue
