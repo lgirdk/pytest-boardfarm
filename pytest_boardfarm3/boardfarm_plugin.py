@@ -8,7 +8,10 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 import pytest
-from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
+from boardfarm3.lib.boardfarm_config import (
+    BoardfarmConfig,
+    get_json,
+)
 from boardfarm3.lib.device_manager import DeviceManager, get_device_manager
 from boardfarm3.main import get_plugin_manager
 from pytest import Config, Item, Parser, Session, TestReport  # noqa: PT013
@@ -104,9 +107,11 @@ class BoardfarmPlugin:
             cmdline_args=self._session_config.option,
             plugin_manager=self._plugin_manager,
         )
-        self.boardfarm_config = parse_boardfarm_config(
-            inventory_config,
-            self._session_config.option.env_config,
+
+        self.boardfarm_config = self._plugin_manager.hook.boardfarm_parse_config(
+            cmdline_args=self._session_config.option,
+            inventory_config=inventory_config,
+            env_config=get_json(self._session_config.option.env_config),
         )
 
     @staticmethod
