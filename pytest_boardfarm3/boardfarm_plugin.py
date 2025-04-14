@@ -91,7 +91,7 @@ class BoardfarmPlugin:
         )
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_sessionstart(self, session: Session) -> Generator[None, None, None]:
+    def pytest_sessionstart(self, session: Session) -> Generator[None]:
         """Deploy devices to environment and them release after use.
 
         :param session: pytest session instance
@@ -122,7 +122,7 @@ class BoardfarmPlugin:
             return None
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtestloop(self, session: Session) -> Generator[None, None, None]:
+    def pytest_runtestloop(self, session: Session) -> Generator[None]:
         """Deploy devices to environment and them release after use.
 
         :param session: pytest session instance
@@ -169,7 +169,7 @@ class BoardfarmPlugin:
         )
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_setup(self, item: Item) -> Generator[None, None, None]:
+    def pytest_runtest_setup(self, item: Item) -> Generator[None]:
         """Pytest run test setup hook wrapper to validate env_req marker.
 
         :param item: test item
@@ -194,14 +194,14 @@ class BoardfarmPlugin:
         yield
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_protocol(self) -> Generator[None, None, None]:
+    def pytest_runtest_protocol(self) -> Generator[None]:
         """Capture test start and end time for the html report."""
         self._test_start_time = datetime.now(tz=THIS_TZ)
         yield
         self._test_start_time = None
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_makereport(self) -> Generator[None, None, None]:
+    def pytest_runtest_makereport(self) -> Generator[None]:
         """Save test start time to put in html execution report."""
         outcome = yield
         report: TestReport = outcome.get_result()  # type: ignore[attr-defined]

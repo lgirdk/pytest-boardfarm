@@ -232,4 +232,4 @@ def get_boardfarm_html_table_report(
             f'<tr><td style="{_TD_CSS_STYLE}">Deployed devices</td><td'
             f' style="{_TD_CSS_STYLE}">{json.dumps(deployed_devices)}</td></tr>',
         )
-    return f'<table><tbody>{"".join(table_contents)}</tbody></table>'
+    return f"<table><tbody>{''.join(table_contents)}</tbody></table>"
