@@ -201,11 +201,21 @@ class BoardfarmPlugin:
         self._test_start_time = None
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_makereport(self) -> Generator[None]:
+    def pytest_runtest_makereport(self, item: Item) -> Generator[None]:
         """Save test start time to put in html execution report."""
         outcome = yield
         report: TestReport = outcome.get_result()  # type: ignore[attr-defined]
         report.test_start_time = self._test_start_time  # type: ignore[attr-defined]
+        if report.when != "call":
+            return
+        pytest_html = item.config.pluginmanager.getplugin("html")
+        if pytest_html is None:
+            return
+        report.extra = [  # type: ignore[attr-defined]
+            pytest_html.extras.image(image[1], image[0])
+            for image in report.user_properties
+            if ".png" in list(image)[1]  # type: ignore[operator]
+        ]
 
     @staticmethod
     @pytest.hookimpl(optionalhook=True)
