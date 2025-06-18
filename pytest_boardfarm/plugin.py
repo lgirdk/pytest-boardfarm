@@ -154,6 +154,12 @@ def pytest_addoption(parser):
         default=False,
         help="Do not check the resource reservation status on Jenkins",
     )
+    parser.addoption(
+        "--test-names",
+        action="store",
+        default=None,
+        help="Test names for which the execution will be performed",
+    )
 
 
 def trim_pytest_result_for_email(filepathin, filepathout):
@@ -652,6 +658,41 @@ def report_pytestrun_to_elk(session):
         test_data["test_id"] = "Manual" if "Interact" in id else id
         logger.info(f"Logging Data to ELK: {test_data}")
         session.config.elk.post_to_elasticsearch(test_data)
+
+
+def pytest_collection_modifyitems(config, items) -> None:
+    """Discover the tests in the folder.
+
+    Select the test from the tests folder based on the value provided for --test-names
+
+    :param config: pytest config
+    :type config: Config
+    :param items: list of collected tests function
+    :type items: list
+    """
+    selected_tests = []
+    deselected_tests = []
+    test_names = config.getoption("--test-names")
+
+    if not test_names:
+        return
+
+    test_list = test_names.split(" ")
+    for item in items:
+        for test in test_list:
+            test_name = f"test_{test.replace('-', '_')}"
+            if (
+                test_name == item.name
+                or f"{test_name}[" in item.name
+                or f"{test}-" in item.name
+            ):
+                selected_tests.append(item)
+                break
+        else:
+            deselected_tests.append(item)
+    items[:] = selected_tests
+    if deselected_tests:
+        config.hook.pytest_deselected(items=deselected_tests)
 
 
 @pytest.fixture(scope="module", autouse=True)
