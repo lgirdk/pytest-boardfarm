@@ -25,7 +25,7 @@
 
     dependencies = [
         "pytest",
-        "boardfarm3==2025.*",
+        "boardfarm3>=1.0.0",
         "pytest-html==4.*",
         "pytest-instafail",
         "pytest-randomly",

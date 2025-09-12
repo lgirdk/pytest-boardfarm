@@ -1,7 +1,7 @@
 # Pytest Boardfarm
 
 <p align="center">
-  <img src="images/BoardFarm.png" width="350"/><br>
+  <img src="https://raw.githubusercontent.com/lgirdk/pytest-boardfarm/boardfarm3/images/BoardFarm.png" width="350"/><br>
   <img alt="GitHub commit activity (branch)"
        src="https://img.shields.io/github/commit-activity/t/lgirdk/pytest-boardfarm/boardfarm3">
   <img alt="GitHub last commit (branch)"
@@ -27,18 +27,18 @@ It adapts Boardfarm's plugin/runner lifecycle into Pytest sessions and exposes c
 
 ## Table of contents
 
-- [Overview](/README.md#overview)
-- [Quick install](/README.md#quick-install)
-- [How the plugin loads](/README.md#how-the-plugin-loads)
-- [Command-line options and selection](/README.md#command-line-options-and-selection)
-- [Fixtures provided](/README.md#fixtures-provided)
-- [Markers](/README.md#markers)
-- [Running tests — examples](/README.md#running-tests--examples)
-- [How the plugin orchestrates Boardfarm](/README.md#how-the-plugin-orchestrates-boardfarm)
-- [HTML report integration](/README.md#html-report-integration)
-- [Troubleshooting & tips](/README.md#troubleshooting--tips)
-- [Development notes](/README.md#development-notes)
-- [License](/README.md#license)
+- [Overview](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#overview)
+- [Quick install](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#quick-install)
+- [How the plugin loads](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#how-the-plugin-loads)
+- [Command-line options and selection](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#command-line-options-and-selection)
+- [Fixtures provided](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#fixtures-provided)
+- [Markers](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#markers)
+- [Running tests — examples](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#running-tests--examples)
+- [How the plugin orchestrates Boardfarm](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#how-the-plugin-orchestrates-boardfarm)
+- [HTML report integration](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#html-report-integration)
+- [Troubleshooting & tips](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#troubleshooting--tips)
+- [Development notes](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#development-notes)
+- [License](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/README.md#license)
 
 ---
 
@@ -275,4 +275,4 @@ Contributions are welcome. When adding or modifying plugin behavior follow these
 
 ## License
 
-The pytest-boardfarm3 plugin follows the same licensing as Boardfarm (Clear BSD). See the top-level `LICENSE` file for details.
+The pytest-boardfarm3 plugin follows the same licensing as Boardfarm (Clear BSD). See the top-level [LICENSE](https://github.com/lgirdk/pytest-boardfarm/blob/boardfarm3/LICENSE) file for details.
