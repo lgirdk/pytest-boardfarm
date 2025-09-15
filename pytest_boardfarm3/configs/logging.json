@@ -1,0 +1,50 @@
+{
+    "disable_existing_loggers": false,
+    "formatters": {
+        "pexpect": {
+            "class": "logging.Formatter",
+            "format": "%(asctime)s %(levelname)-8s- %(message)-100s  (%(name)s)"
+        },
+        "root": {
+            "class": "logging.Formatter",
+            "format": "%(asctime)s %(levelname)-8s- %(message)-100s  (%(name)s:%(funcName)s:%(lineno)d)"
+        }
+    },
+    "handlers": {
+        "pexpect": {
+            "class": "logging.StreamHandler",
+            "formatter": "pexpect",
+            "level": "DEBUG",
+            "stream": "ext://sys.stderr"
+        },
+        "root": {
+            "class": "logging.StreamHandler",
+            "formatter": "root",
+            "level": "DEBUG",
+            "stream": "ext://sys.stderr"
+        }
+    },
+    "loggers": {
+        "httpcore": {
+            "handlers": [
+                "root"
+            ],
+            "level": "ERROR",
+            "propagate": false
+        },
+        "pexpect": {
+            "handlers": [
+                "pexpect"
+            ],
+            "level": "DEBUG",
+            "propagate": false
+        }
+    },
+    "root": {
+        "handlers": [
+            "root"
+        ],
+        "level": "DEBUG"
+    },
+    "version": 1
+}
