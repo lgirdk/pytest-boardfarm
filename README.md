@@ -57,7 +57,7 @@ It adapts Boardfarm's plugin/runner lifecycle into Pytest sessions and exposes c
 ## Quick install
 
 ```bash
-pip install git+https://github.com/lgirdk/pytest-boardfarm.git
+pip install "boardfarm3[pytest]"
 ```
 
 ### Development Install
