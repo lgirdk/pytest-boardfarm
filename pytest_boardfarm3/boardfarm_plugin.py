@@ -88,6 +88,7 @@ class BoardfarmPlugin:
             cmdline_args=self._session_config.option,
             plugin_manager=self._plugin_manager,
             deployment_status=deployment_status,
+            device_manager=self.device_manager,
         )
 
     @pytest.hookimpl(hookwrapper=True)
