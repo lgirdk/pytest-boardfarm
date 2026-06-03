@@ -36,7 +36,10 @@ or clarification.
 1. **Every device call must invoke a real method listed in the "Device
    API surface" section below.** That section is the only source of
    method names and signatures — your training data is unreliable for
-   this framework.
+   this framework. **You only ever CALL methods that already exist in
+   the API surface; you never write, define, or assume a new device
+   method.** If the operation you need is not listed, you do not create
+   it — you bail out (HARD CONSTRAINT #10).
 
    Workflow for every device operation:
 
@@ -55,13 +58,14 @@ or clarification.
       Many methods take arguments your training would omit; include
       them all.
 
-   If no method in the device's subsection matches the operation,
-   choose the closest semantic equivalent that IS listed. Do NOT
-   invent a method name, do NOT substitute one from training-data
-   canonical-API conventions (`set_parameter_values`, `add_object`,
-   `ssh_login`, `curl`, `http_request`, `dhcp_renew`, `wifi_connect`,
-   `factory_reset`, …), and do NOT shell out via `execute_command`
-   (see rule 5).
+   If no method in the device's subsection genuinely performs the
+   operation, do NOT generate that test. Do NOT invent a method name,
+   do NOT approximate with a loosely-related listed method, do NOT
+   substitute one from training-data canonical-API conventions
+   (`set_parameter_values`, `add_object`, `ssh_login`, `curl`,
+   `http_request`, `dhcp_renew`, `wifi_connect`, `factory_reset`, …),
+   and do NOT shell out via `execute_command` (see rule 5). Bail out
+   for that test instead (see HARD CONSTRAINT #10).
 
 2. **Every assertion must respect the method's actual return type as
    shown in the API surface below.**
@@ -133,19 +137,23 @@ or clarification.
    method instead (rule 1).
 
 5. **NEVER call `execute_command` (or any pexpect / console method) on
-   a device.** Generated tests must use the Template ABC methods in
-   the API surface below — that is the only permitted interface.
+   a device — under any circumstances, with no exception.** Whatever
+   the spec asks for and whatever the step requires, `execute_command`
+   is never an acceptable substitute, fallback, or last resort. If the
+   only way to perform a step would be `execute_command`, bail out for
+   that test (HARD CONSTRAINT #10) — do not emit it. Generated tests
+   must use the Template ABC methods in the API surface below — that is
+   the only permitted interface.
    Shelling out via `device.execute_command(...)`,
    `device.console.execute_command(...)`,
    `device._console.execute_command(...)`,
    `device.console.sendline(...)`, or `device.console.expect(...)`
    is forbidden. The same applies to `*_async` variants.
 
-   If a step has no exact Template ABC method, use the closest
-   semantic equivalent that IS listed. If absolutely nothing fits,
-   note the gap in the trailing "Notes" section explaining what
-   method would be needed — do NOT bypass the abstraction with
-   `execute_command`.
+   If a step has no Template ABC method that genuinely performs the
+   operation, do NOT bypass the abstraction with `execute_command`
+   and do NOT approximate with a loosely-related method — bail out
+   for that test instead (see HARD CONSTRAINT #10).
 
 6. **NEVER emit `@pytest.mark.env_req(...)` or any other pytest mark.**
    Test functions are plain pytest functions: `def test_<name>(<fixtures>):`.
@@ -169,6 +177,25 @@ or clarification.
    function. No `class` keyword anywhere.
 
 9. **Generate every test in a single response. Do not ask the user.**
+
+10. **Bail out instead of approximating or inventing.** If a spec step
+   requires a device operation that has NO genuine matching method in
+   the Device API surface below, do NOT generate that test. Do not
+   invent a method, do not substitute a plausible-looking training-data
+   name, do not approximate with a loosely-related listed method, and
+   do not fall back to `execute_command`.
+
+   Instead, omit that test's `### test_<name>.py` block entirely and
+   record it under a `## BAILED OUT` section at the end of the response:
+
+       ## BAILED OUT
+       - test_<name>: step <N> ("<action>") needs operation
+         "<plain-English description>" on <Device> — no matching method
+         in the API surface.
+
+   Generate the tests that CAN be fully satisfied and bail out only on
+   the ones that cannot. If no test in the spec can be fully satisfied,
+   emit only the `## BAILED OUT` section.
 
 ---
 
@@ -717,9 +744,12 @@ For each test in the spec:
     <full file contents>
     ```
 
-If the spec describes N tests, emit N such blocks. If any spec ambiguity
-required a judgment call (default port, timeout, etc.), append a short
-"Notes" section at the end. Otherwise emit nothing else.
+If the spec describes N tests, emit one block per test that can be fully
+satisfied by the API surface. Any test that cannot — because a required
+operation has no matching method — is omitted and listed under a
+`## BAILED OUT` section instead (HARD CONSTRAINT #10). If any spec
+ambiguity required a judgment call (default port, timeout, etc.), append
+a short "Notes" section at the end. Otherwise emit nothing else.
 
 ### Style rules
 
@@ -770,6 +800,11 @@ Re-read each generated file. If any check fails, rewrite before sending.
 - [ ] **Every `device.<method>(...)` call appears in the API surface
       above** — method name AND every required argument shown there.
       No method and no argument came from a training-data guess.
+- [ ] **No approximated or invented method.** Every operation maps to a
+      genuine API-surface method. Any operation with no genuine match
+      caused the test to be omitted and recorded under `## BAILED OUT`
+      (HARD CONSTRAINT #10) — never faked with a loosely-related method,
+      an invented name, or `execute_command`.
 - [ ] **Method names match the API surface byte-for-byte, including
       case.** No lowercase normalisation of acronyms.
 - [ ] **Every assertion respects the method's return-type annotation
