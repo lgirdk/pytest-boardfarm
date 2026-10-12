@@ -1,5 +1,5 @@
 """Integrate boardfarm as a pytest plugin."""
 
-__version__ = "2026.9.29a0"
+__version__ = "2026.10.12"
 
 __pypi_url__ = "https://github.com/lgirdk/pytest-boardfarm"
